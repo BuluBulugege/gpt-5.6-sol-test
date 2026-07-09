@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#171610" />
+  <title>王冠陨落：灰烬战线</title>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@500;600;700;900&display=swap');
+
+:root {
+  color-scheme: dark;
+  --ink: #11130f;
+  --panel: #1b1b16;
+  --panel-2: #25231b;
+  --bone: #e8dab4;
+  --muted: #9b9279;
+  --brass: #c49a4a;
+  --brass-light: #f0d184;
+  --blood: #a8392e;
+  --blue: #4da6a8;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-width: 1080px; min-height: 720px; background: #11120e; }
+body { color: var(--bone); font-family: "Noto Serif SC", serif; overflow: hidden; }
+button { font: inherit; }
+.grain { position: fixed; inset: 0; pointer-events: none; opacity: .075; z-index: 30; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }
+.war-room { height: 100vh; display: grid; grid-template-rows: 78px 1fr; padding: 0 24px 24px; background: radial-gradient(circle at 50% 48%, #333124 0, #171811 49%, #0c0d0b 100%); }
+.masthead { display: flex; align-items: center; border-bottom: 1px solid #6c5836; position: relative; }
+.masthead::after { content: ""; position: absolute; bottom: -3px; left: 0; right: 0; height: 1px; background: #19170f; }
+.sigil { width: 50px; height: 50px; display: grid; place-items: center; color: #17150f; background: var(--brass); clip-path: polygon(50% 0, 91% 20%, 82% 80%, 50% 100%, 18% 80%, 9% 20%); font-size: 27px; text-shadow: 0 1px #f5d986; }
+.title-block { margin-left: 15px; }
+.eyebrow { margin: 0; color: var(--brass); font-size: 9px; letter-spacing: .28em; }
+h1 { margin: -3px 0 0; font-family: "Ma Shan Zheng", cursive; font-size: 38px; font-weight: 400; letter-spacing: .16em; color: #f2e2bc; text-shadow: 0 2px 0 #5d281e; }
+.turn-plaque { margin-left: auto; padding-left: 40px; text-align: right; border-left: 1px solid #6c5836; }
+.turn-plaque span { display: block; color: var(--muted); font-size: 10px; letter-spacing: .12em; }
+.turn-plaque strong { color: var(--brass-light); font-size: 19px; letter-spacing: .18em; }
+.battle-layout { min-height: 0; display: grid; grid-template-columns: 205px minmax(650px, 1fr) 205px; gap: 14px; padding-top: 14px; }
+.panel { background: linear-gradient(145deg, rgba(39,37,29,.97), rgba(20,21,17,.98)); border: 1px solid #5a4b32; box-shadow: inset 0 0 0 2px #161713, 0 10px 30px #050604aa; }
+.unit-panel, .intel-panel { min-height: 0; padding: 14px; display: flex; flex-direction: column; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; color: var(--brass-light); border-bottom: 1px solid #665337; padding-bottom: 10px; font-size: 13px; letter-spacing: .12em; }
+.panel-heading small { color: var(--muted); font-size: 9px; }
+.roster { display: grid; gap: 9px; padding-top: 12px; }
+.unit-card { position: relative; display: grid; grid-template-columns: 45px 1fr; gap: 10px; padding: 8px; background: #151611; border: 1px solid #4d4432; cursor: pointer; transition: .16s ease; }
+.unit-card:hover, .unit-card.selected { border-color: var(--brass); transform: translateX(3px); background: #27241a; }
+.unit-card.dead { filter: grayscale(1); opacity: .42; }
+.portrait, .mini-portrait { display: grid; place-items: center; background: linear-gradient(135deg, #886d3b, #263e3c); color: #f7db90; border: 1px solid #9a7b42; font-family: "Ma Shan Zheng"; font-size: 23px; }
+.unit-card small { display: block; color: var(--muted); font-size: 8px; letter-spacing: .1em; }
+.unit-card strong { display: block; font-size: 13px; margin: 2px 0 5px; }
+.hp-track { height: 4px; background: #3d211d; }
+.hp-fill { height: 100%; background: linear-gradient(90deg, #8f3028, #da6650); }
+.unit-stats { margin-top: 4px; display: flex; justify-content: space-between; color: #bfb294; font-size: 8px; }
+.objective-card { margin-top: auto; display: flex; gap: 9px; padding: 12px 8px; border-top: 1px solid #665337; }
+.objective-rune { color: var(--brass-light); font-size: 24px; }
+.objective-card small, .objective-card strong { display: block; }
+.objective-card small { font-size: 8px; color: var(--muted); }
+.objective-card strong { font-size: 11px; margin-top: 2px; }
+.battlefield-shell { min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) 74px; gap: 10px; }
+.canvas-wrap { position: relative; min-height: 0; overflow: hidden; border: 2px solid #80663d; background: #1d241d; box-shadow: 0 0 0 3px #17140e, 0 16px 50px #000a; }
+canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; cursor: crosshair; }
+.vignette { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 80px 24px #0a0b08cc; }
+.battle-banner { position: absolute; left: 50%; top: 42%; width: 390px; transform: translate(-50%, -50%); text-align: center; padding: 15px 35px 18px; background: linear-gradient(90deg, transparent, #171510ed 18%, #171510ed 82%, transparent); transition: 1s ease; pointer-events: none; }
+.battle-banner:not(.is-visible) { opacity: 0; transform: translate(-50%, -60%); }
+.battle-banner span, .battle-banner small { display: block; color: #c9af75; letter-spacing: .22em; font-size: 9px; }
+.battle-banner strong { display: block; font-family: "Ma Shan Zheng"; font-weight: 400; font-size: 39px; letter-spacing: .18em; color: #f0dfb6; }
+.result-modal { position: absolute; inset: 0; z-index: 8; display: grid; place-content: center; justify-items: center; text-align: center; background: #0e0f0ce8; }
+.result-modal[hidden] { display: none; }
+.result-crest { color: var(--brass); font-size: 54px; }
+.result-modal small { color: #a89163; letter-spacing: .3em; }
+.result-modal h2 { font-family: "Ma Shan Zheng"; font-size: 60px; font-weight: 400; margin: 2px; color: #f1ddb0; }
+.result-modal p { color: #b9ae92; }
+.result-modal button, .end-turn { border: 1px solid #d1a951; color: #f1ddb0; background: linear-gradient(#7a3f27, #4c251c); cursor: pointer; box-shadow: inset 0 0 0 2px #301711; }
+.result-modal button { padding: 10px 28px; }
+.command-bar { padding: 9px 12px; display: grid; grid-template-columns: 180px 1fr 130px; align-items: center; gap: 12px; }
+.selected-summary { display: flex; gap: 10px; align-items: center; }
+.mini-portrait { width: 43px; height: 43px; }
+.selected-summary small, .selected-summary strong { display: block; }
+.selected-summary small { font-size: 8px; color: var(--muted); }
+.selected-summary strong { font-size: 13px; margin-top: 2px; }
+.action-hint { color: #b9ae92; font-size: 11px; text-align: center; border-left: 1px solid #51452f; border-right: 1px solid #51452f; padding: 9px; }
+.end-turn { height: 42px; font-size: 12px; letter-spacing: .09em; }
+.end-turn:hover { filter: brightness(1.2); }
+.end-turn:disabled { filter: grayscale(1); opacity: .5; cursor: not-allowed; }
+.weather { display: flex; gap: 10px; padding: 15px 0; border-bottom: 1px solid #4d4432; }
+.weather-icon { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid #6d6149; color: #b6d2c5; font-size: 22px; background: #18201e; }
+.weather small, .weather strong, .weather p { display: block; margin: 0; }
+.weather small { color: var(--muted); font-size: 8px; }
+.weather strong { font-size: 11px; }
+.weather p { font-size: 8px; color: #7ea7a2; margin-top: 2px; }
+.legend { display: grid; gap: 8px; padding: 13px 0; border-bottom: 1px solid #4d4432; }
+.legend div { display: flex; align-items: center; gap: 8px; font-size: 9px; color: #aca187; }
+.legend i { width: 13px; height: 13px; border: 1px solid; }
+.legend .move { background: #2e8d8b88; border-color: #63c7bd; }
+.legend .attack { background: #b5524288; border-color: #e37457; }
+.legend .danger { background: repeating-linear-gradient(45deg, #7c332a, #7c332a 2px, #2b1c19 2px, #2b1c19 4px); border-color: #9c4c3f; }
+.combat-log { min-height: 100px; overflow: hidden; padding: 10px 0; color: #918870; font-size: 8px; line-height: 1.7; }
+.log-entry { animation: log-in .25s ease; }
+.log-entry b { color: #d3b972; }
+.controls { margin-top: auto; padding-top: 10px; border-top: 1px solid #4d4432; color: #8d856f; font-size: 8px; }
+.controls small { color: var(--brass); letter-spacing: .15em; }
+.controls p { margin: 6px 0 0; }
+kbd { border: 1px solid #574d39; background: #11120e; color: #cfc09d; padding: 1px 4px; }
+@keyframes log-in { from { opacity: 0; transform: translateX(8px); } }
+@media (max-height: 800px) { .war-room { grid-template-rows: 64px 1fr; } .masthead h1 { font-size: 31px; } .unit-card { padding: 6px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+</style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <main class="war-room">
+    <header class="masthead">
+      <div class="sigil" aria-hidden="true">♜</div>
+      <div class="title-block">
+        <p class="eyebrow">THE ASHEN FRONT · 战役 01</p>
+        <h1>王冠陨落</h1>
+      </div>
+      <div class="turn-plaque">
+        <span id="roundLabel">第 1 回合</span>
+        <strong id="turnLabel">我方行动</strong>
+      </div>
+    </header>
+
+    <section class="battle-layout">
+      <aside class="unit-panel panel">
+        <div class="panel-heading"><span>出战编队</span><small>2 / 2</small></div>
+        <div id="roster" class="roster"></div>
+        <div class="objective-card">
+          <span class="objective-rune">✦</span>
+          <div><small>胜利目标</small><strong>击溃灰烬守军</strong></div>
+        </div>
+      </aside>
+
+      <section class="battlefield-shell">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="gameCanvas" aria-label="战棋游戏地图"></canvas>
+          <div class="vignette" aria-hidden="true"></div>
+          <div id="battleBanner" class="battle-banner is-visible">
+            <span>第一幕</span><strong>雾隐关隘</strong><small>在敌军增援抵达前突破防线</small>
+          </div>
+          <div id="resultModal" class="result-modal" hidden>
+            <div class="result-crest">♛</div><small id="resultKicker">战役结束</small>
+            <h2 id="resultTitle">大捷</h2><p id="resultText">灰烬之路已向王都敞开。</p>
+            <button id="restartButton">再战一局</button>
+          </div>
+        </div>
+        <div class="command-bar panel">
+          <div class="selected-summary">
+            <div id="selectedPortrait" class="mini-portrait">?</div>
+            <div><small id="selectedClass">请选择单位</small><strong id="selectedName">等待号令</strong></div>
+          </div>
+          <div id="actionHint" class="action-hint">点击我方单位，查看移动与攻击范围</div>
+          <button id="endTurnButton" class="end-turn">结束回合 <span>⏎</span></button>
+        </div>
+      </section>
+
+      <aside class="intel-panel panel">
+        <div class="panel-heading"><span>战场情报</span><small>实时</small></div>
+        <div class="weather">
+          <div class="weather-icon">☽</div><div><small>环境效果</small><strong>山谷薄雾</strong><p>视野氛围增强</p></div>
+        </div>
+        <div class="legend">
+          <div><i class="move"></i><span>可移动区域</span></div>
+          <div><i class="attack"></i><span>可攻击区域</span></div>
+          <div><i class="danger"></i><span>敌军威胁</span></div>
+        </div>
+        <div class="combat-log" id="combatLog" aria-live="polite"></div>
+        <div class="controls"><small>操作</small><p><kbd>鼠标</kbd> 选择 / 移动 / 攻击</p><p><kbd>Enter</kbd> 结束回合</p><p><kbd>Esc</kbd> 取消选择</p></div>
+      </aside>
+    </section>
+  </main>
+  <script>
+const BOARD_WIDTH = 8;
+const BOARD_HEIGHT = 8;
+
+const TEAMS = Object.freeze({
+  PLAYER: 'player',
+  ENEMY: 'enemy'
+});
+
+const TERRAIN_TYPES = Object.freeze({
+  PLAIN: 'plain',
+  FOREST: 'forest',
+  RUINS: 'ruins',
+  WATER: 'water'
+});
+
+const TERRAIN_COSTS = Object.freeze({
+  [TERRAIN_TYPES.PLAIN]: 1,
+  [TERRAIN_TYPES.FOREST]: 2,
+  [TERRAIN_TYPES.RUINS]: 2,
+  [TERRAIN_TYPES.WATER]: Infinity
+});
+
+const TERRAIN_MAP = Object.freeze([
+  Object.freeze(['plain', 'plain', 'forest', 'plain', 'plain', 'plain', 'plain', 'plain']),
+  Object.freeze(['plain', 'ruins', 'forest', 'plain', 'plain', 'plain', 'forest', 'plain']),
+  Object.freeze(['plain', 'plain', 'plain', 'plain', 'water', 'water', 'forest', 'plain']),
+  Object.freeze(['forest', 'plain', 'plain', 'plain', 'plain', 'water', 'plain', 'plain']),
+  Object.freeze(['plain', 'plain', 'ruins', 'plain', 'plain', 'plain', 'plain', 'plain']),
+  Object.freeze(['plain', 'forest', 'plain', 'plain', 'forest', 'plain', 'ruins', 'plain']),
+  Object.freeze(['plain', 'plain', 'plain', 'plain', 'plain', 'plain', 'plain', 'plain']),
+  Object.freeze(['plain', 'plain', 'plain', 'plain', 'plain', 'plain', 'plain', 'plain'])
+]);
+
+const UNIT_DEFINITIONS = Object.freeze({
+  aegis: Object.freeze({
+    id: 'aegis',
+    name: 'Aegis',
+    role: 'Vanguard',
+    team: TEAMS.PLAYER,
+    maxHp: 96,
+    attack: 25,
+    defense: 8,
+    moveRange: 3,
+    attackRange: 1
+  }),
+  lyra: Object.freeze({
+    id: 'lyra',
+    name: 'Lyra',
+    role: 'Ranger',
+    team: TEAMS.PLAYER,
+    maxHp: 72,
+    attack: 22,
+    defense: 4,
+    moveRange: 3,
+    attackRange: 3
+  }),
+  warden: Object.freeze({
+    id: 'warden',
+    name: 'Warden',
+    role: 'Sentinel',
+    team: TEAMS.ENEMY,
+    maxHp: 82,
+    attack: 23,
+    defense: 6,
+    moveRange: 3,
+    attackRange: 1
+  }),
+  shade: Object.freeze({
+    id: 'shade',
+    name: 'Shade',
+    role: 'Skirmisher',
+    team: TEAMS.ENEMY,
+    maxHp: 68,
+    attack: 20,
+    defense: 3,
+    moveRange: 4,
+    attackRange: 2
+  })
+});
+
+const INITIAL_POSITIONS = Object.freeze({
+  aegis: Object.freeze({ x: 2, y: 7 }),
+  lyra: Object.freeze({ x: 3, y: 7 }),
+  warden: Object.freeze({ x: 5, y: 1 }),
+  shade: Object.freeze({ x: 6, y: 1 })
+});
+
+
+const createUnit = (definition, position) => ({
+  ...definition,
+  hp: definition.maxHp,
+  position: { ...position },
+  hasMoved: false,
+  hasActed: false
+});
+
+function createInitialState() {
+  const units = Object.fromEntries(
+    Object.entries(UNIT_DEFINITIONS).map(([unitId, definition]) => [
+      unitId,
+      createUnit(definition, INITIAL_POSITIONS[unitId])
+    ])
+  );
+
+  return {
+    board: {
+      width: BOARD_WIDTH,
+      height: BOARD_HEIGHT,
+      terrain: TERRAIN_MAP.map((row) => [...row])
+    },
+    units,
+    turn: TEAMS.PLAYER,
+    round: 1,
+    selectedUnitId: null
+  };
+}
+
+function selectUnit(state, unitId) {
+  const unit = state?.units?.[unitId];
+  const selectedUnitId = unit && unit.hp > 0 ? unitId : null;
+
+  if (state?.selectedUnitId === selectedUnitId) {
+    return state;
+  }
+
+  return { ...state, selectedUnitId };
+}
+
+function clearSelection(state) {
+  return selectUnit(state, null);
+}
+
+function updateUnit(state, unitId, updater) {
+  const unit = state?.units?.[unitId];
+  if (!unit || typeof updater !== 'function') {
+    return state;
+  }
+
+  const updatedUnit = updater({ ...unit, position: { ...unit.position } });
+  if (!updatedUnit || updatedUnit === unit) {
+    return state;
+  }
+
+  return {
+    ...state,
+    units: {
+      ...state.units,
+      [unitId]: updatedUnit
+    }
+  };
+}
+
+
+const DIRECTIONS = Object.freeze([
+  Object.freeze({ x: 0, y: -1 }),
+  Object.freeze({ x: -1, y: 0 }),
+  Object.freeze({ x: 1, y: 0 }),
+  Object.freeze({ x: 0, y: 1 })
+]);
+
+const tileKey = (x, y) => `${x},${y}`;
+
+const getBoardWidth = (state) => state?.board?.width ?? BOARD_WIDTH;
+const getBoardHeight = (state) => state?.board?.height ?? BOARD_HEIGHT;
+
+function isInsideBoard(state, x, y) {
+  return Number.isInteger(x)
+    && Number.isInteger(y)
+    && x >= 0
+    && y >= 0
+    && x < getBoardWidth(state)
+    && y < getBoardHeight(state);
+}
+
+function getTerrainAt(state, x, y) {
+  if (!isInsideBoard(state, x, y)) {
+    return null;
+  }
+
+  return state?.board?.terrain?.[y]?.[x] ?? TERRAIN_MAP[y]?.[x] ?? null;
+}
+
+function getTerrainCost(state, x, y) {
+  const terrain = getTerrainAt(state, x, y);
+  return terrain === null ? Infinity : (TERRAIN_COSTS[terrain] ?? Infinity);
+}
+
+function getLivingUnits(state) {
+  return Object.values(state?.units ?? {}).filter((unit) => unit.hp > 0);
+}
+
+function getTeamUnits(state, team) {
+  return getLivingUnits(state).filter((unit) => unit.team === team);
+}
+
+function getUnitAt(state, x, y, ignoredUnitId = null) {
+  return getLivingUnits(state).find((unit) => (
+    unit.id !== ignoredUnitId
+    && unit.position.x === x
+    && unit.position.y === y
+  )) ?? null;
+}
+
+function getManhattanDistance(first, second) {
+  if (!first || !second) {
+    return Infinity;
+  }
+
+  return Math.abs(first.x - second.x) + Math.abs(first.y - second.y);
+}
+
+function getMoveTiles(state, unitId) {
+  const unit = state?.units?.[unitId];
+  if (!unit || unit.hp <= 0 || unit.hasMoved) {
+    return [];
+  }
+
+  const distances = new Map([[tileKey(unit.position.x, unit.position.y), 0]]);
+  const frontier = [{ ...unit.position, cost: 0 }];
+
+  while (frontier.length > 0) {
+    frontier.sort((first, second) => first.cost - second.cost);
+    const current = frontier.shift();
+    if (!current || current.cost !== distances.get(tileKey(current.x, current.y))) {
+      continue;
+    }
+
+    for (const direction of DIRECTIONS) {
+      const x = current.x + direction.x;
+      const y = current.y + direction.y;
+      if (!isInsideBoard(state, x, y) || getUnitAt(state, x, y, unitId)) {
+        continue;
+      }
+
+      const cost = current.cost + getTerrainCost(state, x, y);
+      const key = tileKey(x, y);
+      if (cost > unit.moveRange || cost >= (distances.get(key) ?? Infinity)) {
+        continue;
+      }
+
+      distances.set(key, cost);
+      frontier.push({ x, y, cost });
+    }
+  }
+
+  return [...distances.entries()]
+    .filter(([key]) => key !== tileKey(unit.position.x, unit.position.y))
+    .map(([key, cost]) => {
+      const [x, y] = key.split(',').map(Number);
+      return { x, y, cost };
+    })
+    .sort((first, second) => first.cost - second.cost || first.y - second.y || first.x - second.x);
+}
+
+function getAttackTiles(state, unitId, origin = null) {
+  const unit = state?.units?.[unitId];
+  if (!unit || unit.hp <= 0) {
+    return [];
+  }
+
+  const center = origin ?? unit.position;
+  const tiles = [];
+  for (let y = 0; y < getBoardHeight(state); y += 1) {
+    for (let x = 0; x < getBoardWidth(state); x += 1) {
+      const distance = getManhattanDistance(center, { x, y });
+      if (distance > 0 && distance <= unit.attackRange) {
+        tiles.push({ x, y });
+      }
+    }
+  }
+
+  return tiles;
+}
+
+function getAttackTargets(state, unitId, origin = null) {
+  const unit = state?.units?.[unitId];
+  if (!unit || unit.hp <= 0 || unit.hasActed) {
+    return [];
+  }
+
+  const attackableTiles = new Set(
+    getAttackTiles(state, unitId, origin).map(({ x, y }) => tileKey(x, y))
+  );
+
+  return getLivingUnits(state).filter((target) => (
+    target.team !== unit.team
+    && attackableTiles.has(tileKey(target.position.x, target.position.y))
+  ));
+}
+
+function canMoveUnit(state, unitId, x, y) {
+  const unit = state?.units?.[unitId];
+  return Boolean(
+    unit
+    && unit.team === state.turn
+    && getMoveTiles(state, unitId).some((tile) => tile.x === x && tile.y === y)
+  );
+}
+
+function canAttackUnit(state, attackerId, targetId) {
+  const attacker = state?.units?.[attackerId];
+  return Boolean(
+    attacker
+    && attacker.team === state.turn
+    && getAttackTargets(state, attackerId).some((target) => target.id === targetId)
+  );
+}
+
+function moveUnit(state, unitId, x, y) {
+  if (!canMoveUnit(state, unitId, x, y)) {
+    return state;
+  }
+
+  const unit = state.units[unitId];
+  return {
+    ...state,
+    units: {
+      ...state.units,
+      [unitId]: {
+        ...unit,
+        position: { x, y },
+        hasMoved: true
+      }
+    }
+  };
+}
+
+function calculateDamage(attacker, defender) {
+  if (!attacker || !defender) {
+    return 0;
+  }
+
+  return Math.max(1, attacker.attack - defender.defense);
+}
+
+function attackUnit(state, attackerId, targetId) {
+  if (!canAttackUnit(state, attackerId, targetId)) {
+    return state;
+  }
+
+  const attacker = state.units[attackerId];
+  const target = state.units[targetId];
+  const damage = calculateDamage(attacker, target);
+
+  return {
+    ...state,
+    units: {
+      ...state.units,
+      [attackerId]: { ...attacker, hasActed: true },
+      [targetId]: { ...target, hp: Math.max(0, target.hp - damage) }
+    }
+  };
+}
+
+function getWinner(state) {
+  const hasPlayers = getTeamUnits(state, TEAMS.PLAYER).length > 0;
+  const hasEnemies = getTeamUnits(state, TEAMS.ENEMY).length > 0;
+
+  if (hasPlayers && hasEnemies) {
+    return null;
+  }
+  if (hasPlayers) {
+    return TEAMS.PLAYER;
+  }
+  if (hasEnemies) {
+    return TEAMS.ENEMY;
+  }
+  return 'draw';
+}
+
+function isBattleOver(state) {
+  return getWinner(state) !== null;
+}
+
+function endTurn(state) {
+  if (!state || isBattleOver(state)) {
+    return state;
+  }
+
+  const incomingTeam = state.turn === TEAMS.PLAYER ? TEAMS.ENEMY : TEAMS.PLAYER;
+  const units = Object.fromEntries(
+    Object.entries(state.units).map(([unitId, unit]) => [
+      unitId,
+      unit.team === incomingTeam
+        ? { ...unit, hasMoved: false, hasActed: false }
+        : unit
+    ])
+  );
+
+  return {
+    ...state,
+    units,
+    turn: incomingTeam,
+    round: incomingTeam === TEAMS.PLAYER ? state.round + 1 : state.round,
+    selectedUnitId: null
+  };
+}
+
+function getLegalActions(state, unitId) {
+  const unit = state?.units?.[unitId];
+  if (!unit || unit.hp <= 0 || unit.team !== state.turn) {
+    return { moves: [], attacks: [] };
+  }
+
+  return {
+    moves: getMoveTiles(state, unitId),
+    attacks: getAttackTargets(state, unitId)
+  };
+}
+
+function applyAction(state, action) {
+  if (!action || typeof action !== 'object') {
+    return state;
+  }
+
+  if (action.type === 'move') {
+    return moveUnit(state, action.unitId, action.x, action.y);
+  }
+  if (action.type === 'attack') {
+    return attackUnit(state, action.attackerId, action.targetId);
+  }
+  if (action.type === 'end-turn') {
+    return endTurn(state);
+  }
+  return state;
+}
+
+
+const compareTargets = (first, second) => (
+  first.hp - second.hp
+  || first.defense - second.defense
+  || first.id.localeCompare(second.id)
+);
+
+const nearestDistance = (position, targets) => targets.reduce(
+  (minimum, target) => Math.min(minimum, getManhattanDistance(position, target.position)),
+  Infinity
+);
+
+function chooseEnemyAction(state, unitId) {
+  const unit = state?.units?.[unitId];
+  if (!unit || unit.hp <= 0 || unit.team !== TEAMS.ENEMY || state.turn !== TEAMS.ENEMY) {
+    return { type: 'wait', unitId };
+  }
+
+  const attackTargets = getAttackTargets(state, unitId).sort(compareTargets);
+  if (attackTargets.length > 0) {
+    return {
+      type: 'attack',
+      attackerId: unitId,
+      targetId: attackTargets[0].id
+    };
+  }
+
+  const playerUnits = getLivingUnits(state).filter((target) => target.team === TEAMS.PLAYER);
+  if (playerUnits.length === 0 || unit.hasMoved) {
+    return { type: 'wait', unitId };
+  }
+
+  const currentDistance = nearestDistance(unit.position, playerUnits);
+  const move = getMoveTiles(state, unitId)
+    .map((tile) => ({ ...tile, targetDistance: nearestDistance(tile, playerUnits) }))
+    .filter((tile) => tile.targetDistance < currentDistance)
+    .sort((first, second) => (
+      first.targetDistance - second.targetDistance
+      || second.cost - first.cost
+      || first.y - second.y
+      || first.x - second.x
+    ))[0];
+
+  if (!move) {
+    return { type: 'wait', unitId };
+  }
+
+  return { type: 'move', unitId, x: move.x, y: move.y };
+}
+
+function chooseEnemyTurnActions(state) {
+  if (state?.turn !== TEAMS.ENEMY) {
+    return [];
+  }
+
+  return getLivingUnits(state)
+    .filter((unit) => unit.team === TEAMS.ENEMY)
+    .map((unit) => chooseEnemyAction(state, unit.id));
+}
+
+
+const PALETTE = {
+  plain: ['#58634a', '#687354', '#3f493a', '#879064'], forest: ['#34483b', '#3f5944', '#26382f', '#677453'],
+  ruins: ['#646357', '#777466', '#46483f', '#a19778'], water: ['#314b50', '#3e6164', '#21383d', '#6f8580'],
+  player: '#54b7ad', enemy: '#c75845', gold: '#e1be68', shadow: '#10130f'
+};
+
+const hash = (x, y, seed = 1) => Math.abs(Math.sin(x * 91.71 + y * 37.13 + seed * 17.7) * 43758.5453) % 1;
+const key = (x, y) => `${x},${y}`;
+
+class BattleRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.context = canvas.getContext('2d');
+    this.layout = { tile: 64, left: 0, top: 0 };
+    this.particles = [];
+    this.floaters = [];
+    this.shake = 0;
+    this.time = 0;
+    this.hover = null;
+    this.selectedId = null;
+  }
+
+  resize(state) {
+    const rect = this.canvas.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(rect.width * ratio));
+    const height = Math.max(1, Math.floor(rect.height * ratio));
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.canvas.width = width; this.canvas.height = height;
+    }
+    this.context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    this.context.imageSmoothingEnabled = false;
+    const tile = Math.floor(Math.min((rect.width - 52) / state.board.width, (rect.height - 42) / state.board.height));
+    this.layout = { tile, left: Math.floor((rect.width - tile * state.board.width) / 2), top: Math.floor((rect.height - tile * state.board.height) / 2) };
+  }
+
+  screenToTile(clientX, clientY, state) {
+    const rect = this.canvas.getBoundingClientRect();
+    const x = Math.floor((clientX - rect.left - this.layout.left) / this.layout.tile);
+    const y = Math.floor((clientY - rect.top - this.layout.top) / this.layout.tile);
+    return x >= 0 && y >= 0 && x < state.board.width && y < state.board.height ? { x, y } : null;
+  }
+
+  tileCenter(position) {
+    return { x: this.layout.left + position.x * this.layout.tile + this.layout.tile / 2, y: this.layout.top + position.y * this.layout.tile + this.layout.tile / 2 };
+  }
+
+  burst(position, color, amount = 18) {
+    const center = this.tileCenter(position);
+    for (let index = 0; index < amount; index += 1) {
+      const angle = (Math.PI * 2 * index) / amount + hash(index, amount) * .5;
+      const speed = 45 + hash(index, amount, 4) * 100;
+      this.particles.push({ x: center.x, y: center.y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed - 30, life: .45 + hash(index, 3) * .35, max: .8, color, size: 2 + Math.floor(hash(index, 9) * 4) });
+    }
+    this.shake = 7;
+  }
+
+  damage(position, amount) {
+    const center = this.tileCenter(position);
+    this.floaters.push({ x: center.x, y: center.y - this.layout.tile * .32, text: `-${amount}`, life: 1, max: 1 });
+    this.burst(position, '#ef7452', 24);
+  }
+
+  update(delta) {
+    this.time += delta;
+    this.shake = Math.max(0, this.shake - delta * 22);
+    this.particles = this.particles.map((particle) => ({ ...particle, x: particle.x + particle.vx * delta, y: particle.y + particle.vy * delta, vy: particle.vy + 160 * delta, life: particle.life - delta })).filter(({ life }) => life > 0);
+    this.floaters = this.floaters.map((floater) => ({ ...floater, y: floater.y - 28 * delta, life: floater.life - delta })).filter(({ life }) => life > 0);
+  }
+
+  render(state) {
+    this.resize(state);
+    const ctx = this.context;
+    const rect = this.canvas.getBoundingClientRect();
+    const shakeX = this.shake ? Math.round((hash(this.time * 99, 2) - .5) * this.shake) : 0;
+    const shakeY = this.shake ? Math.round((hash(4, this.time * 93) - .5) * this.shake) : 0;
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.save(); ctx.translate(shakeX, shakeY);
+    this.drawAtmosphere(ctx, rect.width, rect.height);
+    this.drawMap(ctx, state);
+    this.drawOverlays(ctx, state);
+    this.drawUnits(ctx, state);
+    this.drawParticles(ctx);
+    ctx.restore();
+  }
+
+  drawAtmosphere(ctx, width, height) {
+    const gradient = ctx.createRadialGradient(width * .5, height * .45, 10, width * .5, height * .45, width * .7);
+    gradient.addColorStop(0, '#4d5139'); gradient.addColorStop(.7, '#1b241e'); gradient.addColorStop(1, '#0d100d');
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
+    for (let index = 0; index < 35; index += 1) {
+      const x = (hash(index, 2) * width + this.time * (5 + index % 3)) % width;
+      const y = hash(index, 7) * height;
+      ctx.fillStyle = `rgba(224,213,171,${.03 + hash(index, 8) * .05})`;
+      ctx.fillRect(Math.round(x), Math.round(y), index % 4 === 0 ? 2 : 1, 1);
+    }
+  }
+
+  drawMap(ctx, state) {
+    const { tile, left, top } = this.layout;
+    ctx.fillStyle = '#161a15'; ctx.fillRect(left - 8, top - 8, tile * state.board.width + 16, tile * state.board.height + 16);
+    state.board.terrain.forEach((row, y) => row.forEach((terrain, x) => {
+      const px = left + x * tile; const py = top + y * tile; const colors = PALETTE[terrain];
+      ctx.fillStyle = colors[0]; ctx.fillRect(px, py, tile, tile);
+      ctx.fillStyle = colors[1]; ctx.fillRect(px + 3, py + 3, tile - 6, tile - 7);
+      ctx.fillStyle = colors[2]; ctx.fillRect(px, py + tile - 5, tile, 5);
+      for (let detail = 0; detail < 7; detail += 1) {
+        const dx = 5 + Math.floor(hash(x * 11 + detail, y, 1) * (tile - 10));
+        const dy = 5 + Math.floor(hash(x, y * 13 + detail, 2) * (tile - 13));
+        ctx.fillStyle = detail % 3 === 0 ? colors[3] : colors[2];
+        const size = detail % 4 === 0 ? 4 : 2; ctx.fillRect(px + dx, py + dy, size, size);
+      }
+      if (terrain === 'forest') this.drawTree(ctx, px + tile * .68, py + tile * .35, tile * .26);
+      if (terrain === 'ruins') this.drawRuin(ctx, px, py, tile);
+      if (terrain === 'water') this.drawWater(ctx, px, py, tile, x, y);
+      ctx.strokeStyle = 'rgba(17,20,15,.34)'; ctx.strokeRect(px + .5, py + .5, tile - 1, tile - 1);
+    }));
+    ctx.strokeStyle = '#b18a45'; ctx.lineWidth = 2; ctx.strokeRect(left - 2, top - 2, tile * state.board.width + 4, tile * state.board.height + 4); ctx.lineWidth = 1;
+  }
+
+  drawTree(ctx, x, y, size) {
+    ctx.fillStyle = '#1d2b25'; ctx.fillRect(x - size * .12, y, size * .22, size * 1.3);
+    ctx.fillStyle = '#172820'; ctx.fillRect(x - size * .6, y - size * .55, size * 1.2, size * .9);
+    ctx.fillStyle = '#36513e'; ctx.fillRect(x - size * .47, y - size * .7, size * .8, size * .65);
+    ctx.fillStyle = '#6d7750'; ctx.fillRect(x - size * .32, y - size * .52, size * .28, size * .17);
+  }
+
+  drawRuin(ctx, x, y, tile) {
+    ctx.fillStyle = '#3b3d37'; ctx.fillRect(x + tile * .14, y + tile * .17, tile * .18, tile * .6); ctx.fillRect(x + tile * .62, y + tile * .34, tile * .22, tile * .42);
+    ctx.fillStyle = '#979179'; ctx.fillRect(x + tile * .14, y + tile * .17, tile * .18, 4); ctx.fillRect(x + tile * .62, y + tile * .34, tile * .22, 4);
+  }
+
+  drawWater(ctx, x, y, tile, tx, ty) {
+    ctx.fillStyle = '#78918a'; const offset = Math.floor((this.time * 12 + tx * 7 + ty * 4) % (tile - 15));
+    ctx.fillRect(x + 7 + offset, y + tile * .3, 10, 2); ctx.fillRect(x + tile - 25 - offset * .5, y + tile * .65, 14, 2);
+  }
+
+  drawOverlays(ctx, state) {
+    const unit = state.units[state.selectedUnitId]; if (!unit || unit.hp <= 0) return;
+    const moves = new Set(getMoveTiles(state, unit.id).map(({ x, y }) => key(x, y)));
+    const attacks = new Set(getAttackTiles(state, unit.id).map(({ x, y }) => key(x, y)));
+    for (let y = 0; y < state.board.height; y += 1) for (let x = 0; x < state.board.width; x += 1) {
+      if (moves.has(key(x, y))) this.drawTileOverlay(ctx, x, y, '#4fc5bf', .25, 'move');
+      else if (attacks.has(key(x, y))) this.drawTileOverlay(ctx, x, y, '#d85e48', .2, 'attack');
+    }
+    if (this.hover) this.drawTileOverlay(ctx, this.hover.x, this.hover.y, '#f0d184', .24, 'hover');
+  }
+
+  drawTileOverlay(ctx, x, y, color, alpha, type) {
+    const { tile, left, top } = this.layout; const px = left + x * tile; const py = top + y * tile;
+    ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.fillRect(px + 2, py + 2, tile - 4, tile - 4); ctx.globalAlpha = 1;
+    ctx.strokeStyle = color; ctx.lineWidth = type === 'hover' ? 3 : 1;
+    const corner = type === 'hover' ? 13 : 7;
+    [[px + 3, py + 3, 1, 1], [px + tile - 3, py + 3, -1, 1], [px + 3, py + tile - 3, 1, -1], [px + tile - 3, py + tile - 3, -1, -1]].forEach(([cx, cy, sx, sy]) => { ctx.beginPath(); ctx.moveTo(cx, cy + sy * corner); ctx.lineTo(cx, cy); ctx.lineTo(cx + sx * corner, cy); ctx.stroke(); });
+    ctx.lineWidth = 1;
+  }
+
+  drawUnits(ctx, state) {
+    const ordered = Object.values(state.units).filter(({ hp }) => hp > 0).sort((a, b) => a.position.y - b.position.y);
+    ordered.forEach((unit) => this.drawUnit(ctx, unit, unit.id === state.selectedUnitId));
+  }
+
+  drawUnit(ctx, unit, selected) {
+    const { tile } = this.layout; const center = this.tileCenter(unit.position); const bob = Math.round(Math.sin(this.time * 3 + unit.position.x) * 1.5);
+    ctx.save(); ctx.translate(Math.round(center.x), Math.round(center.y + tile * .12 + bob));
+    ctx.fillStyle = '#0c0e0bcc'; ctx.beginPath(); ctx.ellipse(0, tile * .27, tile * .28, tile * .09, 0, 0, Math.PI * 2); ctx.fill();
+    const faction = unit.team === 'player' ? PALETTE.player : PALETTE.enemy;
+    if (selected) { ctx.strokeStyle = PALETTE.gold; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, tile * .25, tile * (.3 + Math.sin(this.time * 4) * .02), tile * .12, 0, 0, Math.PI * 2); ctx.stroke(); }
+    ctx.fillStyle = faction; ctx.beginPath(); ctx.ellipse(0, tile * .24, tile * .25, tile * .095, 0, 0, Math.PI * 2); ctx.fill();
+    const scale = tile / 64;
+    if (unit.role === 'Vanguard' || unit.role === 'Sentinel') this.drawKnight(ctx, scale, unit.team, faction);
+    else this.drawRanger(ctx, scale, unit.team, faction);
+    const barWidth = tile * .58; ctx.fillStyle = '#251a17'; ctx.fillRect(-barWidth / 2, -tile * .55, barWidth, 5); ctx.fillStyle = unit.team === 'player' ? '#56b89c' : '#c84c3b'; ctx.fillRect(-barWidth / 2 + 1, -tile * .55 + 1, (barWidth - 2) * unit.hp / unit.maxHp, 3);
+    if (unit.hasActed) { ctx.globalAlpha = .42; ctx.fillStyle = '#10130f'; ctx.fillRect(-tile * .33, -tile * .48, tile * .66, tile * .82); }
+    ctx.restore();
+  }
+
+  drawKnight(ctx, scale, team, faction) {
+    ctx.scale(scale, scale); const facing = team === 'player' ? 1 : -1;
+    ctx.fillStyle = '#302923'; ctx.fillRect(-12, -15, 24, 31); ctx.fillStyle = faction; ctx.fillRect(-15, -11, 30, 8); ctx.fillStyle = '#9e987e'; ctx.fillRect(-10, -22, 20, 19); ctx.fillStyle = '#d5c99e'; ctx.fillRect(-7, -25, 14, 5); ctx.fillStyle = '#20231f'; ctx.fillRect(-7, -16, 14, 3);
+    ctx.fillStyle = '#6b5a3c'; ctx.fillRect(-11, 15, 8, 10); ctx.fillRect(3, 15, 8, 10);
+    ctx.save(); ctx.scale(facing, 1); ctx.fillStyle = '#d1b45e'; ctx.fillRect(15, -9, 4, 29); ctx.fillStyle = '#eee0b5'; ctx.fillRect(14, -21, 6, 15); ctx.fillRect(12, -19, 10, 4); ctx.restore();
+  }
+
+  drawRanger(ctx, scale, team, faction) {
+    ctx.scale(scale, scale); const facing = team === 'player' ? 1 : -1;
+    ctx.fillStyle = '#353126'; ctx.fillRect(-10, -14, 20, 30); ctx.fillStyle = faction; ctx.fillRect(-12, -10, 24, 8); ctx.fillStyle = '#aa8350'; ctx.fillRect(-8, -23, 16, 16); ctx.fillStyle = '#3b2d23'; ctx.fillRect(-10, -25, 20, 7); ctx.fillStyle = '#6c4a32'; ctx.fillRect(-9, 15, 7, 10); ctx.fillRect(2, 15, 7, 10);
+    ctx.save(); ctx.scale(facing, 1); ctx.strokeStyle = '#d4b66f'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(15, -4, 15, -Math.PI / 2, Math.PI / 2); ctx.stroke(); ctx.strokeStyle = '#d6d1b5'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(15, -19); ctx.lineTo(15, 11); ctx.stroke(); ctx.restore(); ctx.lineWidth = 1;
+  }
+
+  drawParticles(ctx) {
+    this.particles.forEach((particle) => { ctx.globalAlpha = Math.min(1, particle.life / .2); ctx.fillStyle = particle.color; ctx.fillRect(Math.round(particle.x), Math.round(particle.y), particle.size, particle.size); });
+    this.floaters.forEach((floater) => { ctx.globalAlpha = floater.life / floater.max; ctx.fillStyle = '#ffe39a'; ctx.strokeStyle = '#54251d'; ctx.lineWidth = 3; ctx.font = '900 21px "Noto Serif SC"'; ctx.textAlign = 'center'; ctx.strokeText(floater.text, floater.x, floater.y); ctx.fillText(floater.text, floater.x, floater.y); });
+    ctx.globalAlpha = 1; ctx.lineWidth = 1;
+  }
+}
+
+
+const canvas = document.querySelector('#gameCanvas');
+const renderer = new BattleRenderer(canvas);
+let state = createInitialState();
+let locked = false;
+let logs = ['<b>号角响起。</b> 灰烬守军封锁了山口。'];
+let lastTime = performance.now();
+
+const names = { aegis: ['苍刃', '王庭先锋', '苍'], lyra: ['莉拉', '雾林游侠', '弓'], warden: ['铁誓守卫', '灰烬重装', '盾'], shade: ['夜鸦', '灰烬猎手', '鸦'] };
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const addLog = (entry) => { logs = [entry, ...logs].slice(0, 8); renderUi(); };
+
+function renderRoster() {
+  const roster = document.querySelector('#roster');
+  roster.innerHTML = Object.values(state.units).filter(({ team }) => team === TEAMS.PLAYER).map((unit) => {
+    const [name, role, glyph] = names[unit.id];
+    return `<button class="unit-card ${state.selectedUnitId === unit.id ? 'selected' : ''} ${unit.hp <= 0 ? 'dead' : ''}" data-unit="${unit.id}" ${unit.hp <= 0 ? 'disabled' : ''}><span class="portrait">${glyph}</span><span><small>${role}</small><strong>${name}</strong><span class="hp-track"><span class="hp-fill" style="width:${Math.max(0, unit.hp / unit.maxHp * 100)}%"></span></span><span class="unit-stats"><span>HP ${unit.hp}/${unit.maxHp}</span><span>攻 ${unit.attack}</span></span></span></button>`;
+  }).join('');
+  roster.querySelectorAll('[data-unit]').forEach((button) => button.addEventListener('click', () => chooseUnit(button.dataset.unit)));
+}
+
+function renderUi() {
+  document.querySelector('#roundLabel').textContent = `第 ${state.round} 回合`;
+  document.querySelector('#turnLabel').textContent = state.turn === TEAMS.PLAYER ? '我方行动' : '敌方行动';
+  document.querySelector('#endTurnButton').disabled = locked || state.turn !== TEAMS.PLAYER || Boolean(getWinner(state));
+  const selected = state.units[state.selectedUnitId];
+  document.querySelector('#selectedPortrait').textContent = selected ? names[selected.id][2] : '?';
+  document.querySelector('#selectedClass').textContent = selected ? names[selected.id][1] : '请选择单位';
+  document.querySelector('#selectedName').textContent = selected ? names[selected.id][0] : '等待号令';
+  document.querySelector('#actionHint').textContent = selected ? `${selected.hasMoved ? '已移动' : '青色：可移动'} · ${selected.hasActed ? '已攻击' : '红色：攻击范围'} · 点击敌军发起攻击` : '点击我方单位，查看移动与攻击范围';
+  document.querySelector('#combatLog').innerHTML = logs.map((line) => `<div class="log-entry">${line}</div>`).join('');
+  renderRoster();
+}
+
+function chooseUnit(unitId) {
+  if (locked || state.turn !== TEAMS.PLAYER) return;
+  const unit = state.units[unitId];
+  if (unit?.team === TEAMS.PLAYER && unit.hp > 0) state = selectUnit(state, state.selectedUnitId === unitId ? null : unitId);
+  renderUi();
+}
+
+async function performAttack(attackerId, targetId) {
+  if (!canAttackUnit(state, attackerId, targetId)) {
+    addLog(`<b>${names[targetId][0]}</b> 不在攻击范围内。`);
+    return;
+  }
+  const attacker = state.units[attackerId]; const target = state.units[targetId]; const damage = calculateDamage(attacker, target);
+  locked = true; renderer.burst(attacker.position, attacker.team === TEAMS.PLAYER ? '#67d9c7' : '#d75d48', 9); await sleep(190);
+  state = applyAction(state, { type: 'attack', attackerId, targetId }); renderer.damage(target.position, damage);
+  addLog(`<b>${names[attackerId][0]}</b> 对 ${names[targetId][0]} 造成 <b>${damage}</b> 点伤害。`);
+  await sleep(430); locked = false; state = selectUnit(state, null); renderUi(); checkResult();
+}
+
+async function handleTile(tile) {
+  if (!tile || locked || state.turn !== TEAMS.PLAYER || getWinner(state)) return;
+  const clickedUnit = getUnitAt(state, tile.x, tile.y);
+  const selected = state.units[state.selectedUnitId];
+  if (clickedUnit?.team === TEAMS.PLAYER) { chooseUnit(clickedUnit.id); return; }
+  if (!selected) return;
+  if (clickedUnit?.team === TEAMS.ENEMY) { await performAttack(selected.id, clickedUnit.id); return; }
+  if (getMoveTiles(state, selected.id).some(({ x, y }) => x === tile.x && y === tile.y)) {
+    state = applyAction(state, { type: 'move', unitId: selected.id, x: tile.x, y: tile.y });
+    renderer.burst(tile, '#9dc47c', 11); addLog(`<b>${names[selected.id][0]}</b> 移动至新的战术位置。`); renderUi();
+  }
+}
+
+async function enemyTurn() {
+  if (locked || getWinner(state)) return;
+  locked = true; state = endTurn(state); renderUi(); addLog('<b>敌方回合。</b> 灰烬军团开始推进。'); await sleep(500);
+  const enemies = Object.values(state.units).filter(({ team, hp }) => team === TEAMS.ENEMY && hp > 0);
+  for (const enemy of enemies) {
+    if (getWinner(state)) break;
+    let action = chooseEnemyAction(state, enemy.id);
+    if (action.type === 'move') { state = applyAction(state, action); renderer.burst({ x: action.x, y: action.y }, '#916d48', 8); addLog(`${names[enemy.id][0]} 正在逼近。`); renderUi(); await sleep(470); action = chooseEnemyAction(state, enemy.id); }
+    if (action.type === 'attack') {
+      const target = state.units[action.targetId]; const damage = calculateDamage(state.units[enemy.id], target);
+      renderer.burst(state.units[enemy.id].position, '#d75d48', 8); await sleep(160); state = applyAction(state, action); renderer.damage(target.position, damage); addLog(`<b>${names[enemy.id][0]}</b> 命中 ${names[target.id][0]}，造成 <b>${damage}</b> 点伤害。`); renderUi(); await sleep(430);
+    }
+  }
+  if (!getWinner(state)) { state = endTurn(state); addLog(`<b>第 ${state.round} 回合。</b> 我方重新获得行动权。`); }
+  locked = false; renderUi(); checkResult();
+}
+
+function checkResult() {
+  const winner = getWinner(state); if (!winner) return;
+  const modal = document.querySelector('#resultModal'); modal.hidden = false;
+  document.querySelector('#resultTitle').textContent = winner === TEAMS.PLAYER ? '大捷' : '败北';
+  document.querySelector('#resultKicker').textContent = winner === TEAMS.PLAYER ? '雾隐关隘已突破' : '王冠军团溃散';
+  document.querySelector('#resultText').textContent = winner === TEAMS.PLAYER ? '灰烬之路已向王都敞开。' : '重整旗鼓，下一次夺回山口。';
+}
+
+canvas.addEventListener('pointermove', (event) => { renderer.hover = renderer.screenToTile(event.clientX, event.clientY, state); });
+canvas.addEventListener('pointerleave', () => { renderer.hover = null; });
+canvas.addEventListener('pointerdown', (event) => handleTile(renderer.screenToTile(event.clientX, event.clientY, state)));
+document.querySelector('#endTurnButton').addEventListener('click', enemyTurn);
+document.querySelector('#restartButton').addEventListener('click', () => { state = createInitialState(); locked = false; logs = ['<b>战役重启。</b> 再次向雾隐关隘进军。']; document.querySelector('#resultModal').hidden = true; renderUi(); });
+window.addEventListener('keydown', (event) => { if (event.key === 'Enter') enemyTurn(); if (event.key === 'Escape') { state = selectUnit(state, null); renderUi(); } });
+setTimeout(() => document.querySelector('#battleBanner').classList.remove('is-visible'), 2300);
+
+function frame(now) { const delta = Math.min(.033, (now - lastTime) / 1000); lastTime = now; renderer.update(delta); renderer.render(state); requestAnimationFrame(frame); }
+renderUi(); requestAnimationFrame(frame);
+window.__TACTICS_TEST__ = { getState: () => structuredClone(state) };
+
+</script>
+</body>
+</html>

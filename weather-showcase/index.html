@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c9ddf2" />
+    <meta name="description" content="四种天气状态的液态玻璃横板天气页面" />
+    <title>天气光景 · Liquid Weather</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient-canvas" aria-hidden="true">
+      <div class="ambient-orb ambient-orb--one"></div>
+      <div class="ambient-orb ambient-orb--two"></div>
+      <div class="ambient-grain"></div>
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="天气光景首页">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+        <span>天气光景</span>
+      </a>
+      <div class="topbar-meta">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span>实时天气</span>
+        <span class="divider" aria-hidden="true"></span>
+        <span id="current-date">7月9日 周四</span>
+      </div>
+    </header>
+
+    <main id="top" aria-label="天气概览">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">ATMOSPHERIC INDEX · 04</p>
+          <h1 id="page-title">四种天气，<br /><em>一览无余。</em></h1>
+        </div>
+        <p class="intro-copy">滑动探索不同天气。每一张卡片，都是一片正在呼吸的天空。</p>
+      </section>
+
+      <section class="weather-shell" aria-label="天气卡片画廊">
+        <button class="rail-button rail-button--prev" type="button" aria-label="查看上一张天气卡片" data-direction="-1">
+          <span aria-hidden="true">←</span>
+        </button>
+        <div class="weather-track" id="weather-track" tabindex="0" role="region" aria-roledescription="轮播" aria-label="四种天气卡片，使用左右方向键浏览" aria-live="polite"></div>
+        <button class="rail-button rail-button--next" type="button" aria-label="查看下一张天气卡片" data-direction="1">
+          <span aria-hidden="true">→</span>
+        </button>
+      </section>
+
+      <footer class="page-footer">
+        <span>向横向滑动</span>
+        <div class="progress" id="progress" aria-label="卡片位置"></div>
+        <span>04 座城市</span>
+      </footer>
+    </main>
+
+    <template id="weather-card-template">
+      <article class="weather-card">
+        <div class="weather-art" aria-hidden="true"></div>
+        <div class="glass-glow" aria-hidden="true"></div>
+        <div class="card-content">
+          <header class="card-header">
+            <div>
+              <span class="condition-index"></span>
+              <p class="condition-english"></p>
+            </div>
+            <div class="condition-pill"><span></span></div>
+          </header>
+
+          <div class="card-main">
+            <p class="location"></p>
+            <div class="temperature-row">
+              <strong class="temperature"></strong>
+              <div class="condition-copy">
+                <h2></h2>
+                <p class="range"></p>
+              </div>
+            </div>
+            <p class="summary"></p>
+          </div>
+
+          <dl class="metrics"></dl>
+          <div class="hourly" aria-label="逐小时预报"></div>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
