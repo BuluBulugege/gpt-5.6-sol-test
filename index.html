@@ -59,6 +59,24 @@
         radial-gradient(circle at center, #7c1f27, #2b1117 64%, #10090c);
       background-size: 54px 54px, 54px 54px, auto;
     }
+    .preview.grading {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, #0d2b4d 0 24%, #f1f5f9 24% 100%);
+    }
+    .preview.grading::before {
+      content: "";
+      position: absolute;
+      inset: 17px 18px 17px 31%;
+      border-radius: 7px;
+      background:
+        linear-gradient(#2b6fc2 0 0) 14px 14px / 42% 8px no-repeat,
+        linear-gradient(#dce4ee 0 0) 14px 34px / calc(100% - 28px) 1px no-repeat,
+        linear-gradient(90deg, #dbeafe 0 22%, transparent 22% 26%, #dcfce7 26% 48%, transparent 48% 52%, #fee2e2 52% 74%, transparent 74% 78%, #fef3c7 78%) 14px 52px / calc(100% - 28px) 38px no-repeat,
+        #fff;
+      box-shadow: 0 8px 18px rgba(13, 43, 77, .18);
+    }
     .project h2 { margin: 22px 0 8px; font-size: 21px; }
     .project p { margin: 0; color: #9ba8be; line-height: 1.65; }
     .open { margin-top: auto; padding-top: 22px; color: #85afff; font-weight: 650; }
@@ -87,6 +105,12 @@
         <div class="preview game" aria-hidden="true"></div>
         <h2>Crownfall Tactics</h2>
         <p>基于 Canvas 的单机战棋游戏。已打包为独立页面，建议使用桌面端浏览器体验。</p>
+        <span class="open">进入项目 →</span>
+      </a>
+      <a class="project" href="./ai-grading-system/">
+        <div class="preview grading" aria-hidden="true"></div>
+        <h2>知阅 AI 智能阅卷系统</h2>
+        <p>面向教师和教务人员的完整业务系统，覆盖上传、AI 批阅、人工复核、异常处理、成绩分析与导出。</p>
         <span class="open">进入项目 →</span>
       </a>
     </section>
