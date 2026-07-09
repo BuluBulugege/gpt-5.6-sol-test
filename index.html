@@ -1,305 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#2867d6">
-  <title>Windows 11 Web Desktop</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>GPT-5.6 Sol 测试</title>
   <style>
     :root {
-      --accent: #0b6bcb;
-      --accent-soft: #d8ebff;
-      --glass: rgba(246, 249, 255, .76);
-      --glass-strong: rgba(250, 252, 255, .93);
-      --line: rgba(22, 48, 80, .12);
-      --ink: #162033;
-      --muted: #617087;
-      --shadow: 0 22px 60px rgba(17, 42, 77, .26), 0 2px 7px rgba(17, 42, 77, .16);
-      --taskbar-h: 52px;
-      --radius: 10px;
-      color-scheme: light;
-      font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #f3f6ff;
+      background: #090d18;
     }
-
     * { box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
-    body { color: var(--ink); background: #2867d6; user-select: none; }
-    button, input, textarea { font: inherit; }
-    button { color: inherit; }
-
-    .hidden { display: none !important; }
-    .desktop {
-      position: relative;
-      width: 100%; height: 100%;
-      overflow: hidden;
+    body {
+      min-height: 100vh;
+      margin: 0;
       background:
-        radial-gradient(ellipse at 68% 42%, rgba(134, 226, 255, .92) 0 8%, rgba(77, 160, 255, .76) 18%, transparent 42%),
-        radial-gradient(ellipse at 38% 58%, rgba(39, 78, 208, .9) 0 12%, rgba(18, 51, 158, .58) 34%, transparent 55%),
-        linear-gradient(135deg, #173bb0 0%, #286edc 42%, #72c6f3 100%);
+        radial-gradient(circle at 18% 8%, rgba(73, 123, 255, .28), transparent 34rem),
+        radial-gradient(circle at 82% 72%, rgba(31, 211, 169, .16), transparent 30rem),
+        #090d18;
     }
-    .desktop::before, .desktop::after {
-      content: ""; position: absolute; pointer-events: none; filter: blur(1px);
-      border-radius: 45% 55% 62% 38% / 55% 44% 56% 45%; transform: rotate(-18deg);
+    main { width: min(1080px, calc(100% - 36px)); margin: 0 auto; padding: 86px 0; }
+    .eyebrow { color: #76a7ff; font-size: 13px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { max-width: 760px; margin: 14px 0; font-size: clamp(42px, 8vw, 84px); line-height: .98; letter-spacing: -.055em; }
+    .intro { max-width: 620px; color: #aeb9ce; font-size: 17px; line-height: 1.8; }
+    .projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 54px; }
+    .project {
+      min-height: 250px;
+      padding: 25px;
+      color: inherit;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px;
+      background: rgba(18, 25, 43, .72);
+      box-shadow: 0 24px 70px rgba(0,0,0,.28);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+      display: flex;
+      flex-direction: column;
     }
-    .desktop::before { width: 58vw; height: 76vh; left: 18vw; top: -14vh; background: rgba(116, 204, 255, .28); box-shadow: inset -30px -18px 60px rgba(255,255,255,.2); }
-    .desktop::after { width: 55vw; height: 70vh; left: 31vw; top: 35vh; background: rgba(10, 45, 176, .28); box-shadow: inset 24px 10px 80px rgba(103,213,255,.22); }
-
-    .svg-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
-    .icon { width: 22px; height: 22px; display: block; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-    .app-logo { width: 30px; height: 30px; display: block; }
-
-    .desktop-icons { position: absolute; z-index: 2; top: 14px; left: 12px; display: grid; gap: 8px; }
-    .desktop-icon { width: 78px; min-height: 76px; padding: 6px 4px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #f7fbff; text-shadow: 0 1px 4px rgba(0,0,0,.75); display: grid; justify-items: center; gap: 4px; cursor: default; }
-    .desktop-icon:hover, .desktop-icon.selected { background: rgba(208, 234, 255, .17); border-color: rgba(255,255,255,.22); }
-    .desktop-icon svg { width: 38px; height: 38px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.18)); }
-    .desktop-icon span { font-size: 12px; line-height: 1.25; }
-
-    .taskbar { position: absolute; z-index: 1000; left: 0; right: 0; bottom: 0; height: var(--taskbar-h); padding: 5px 12px; background: rgba(243, 248, 255, .82); backdrop-filter: blur(28px) saturate(1.35); border-top: 1px solid rgba(255,255,255,.55); display: flex; align-items: center; justify-content: center; box-shadow: 0 -1px 12px rgba(28,62,112,.09); }
-    .taskbar-center { display: flex; align-items: center; gap: 4px; height: 100%; }
-    .task-button, .tray-button { position: relative; height: 42px; min-width: 42px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; cursor: default; transition: background .14s, transform .14s; }
-    .task-button:hover, .tray-button:hover { background: rgba(255,255,255,.58); }
-    .task-button:active { transform: scale(.9); }
-    .task-button.active::after, .task-button.running::after { content: ""; position: absolute; bottom: 1px; width: 16px; height: 3px; border-radius: 4px; background: var(--accent); }
-    .task-button.running:not(.active)::after { width: 6px; background: #65758a; }
-    .task-button svg { width: 26px; height: 26px; }
-    .taskbar-right { position: absolute; right: 8px; display: flex; align-items: center; height: 100%; }
-    .tray-button { min-width: auto; padding: 0 8px; display: flex; gap: 7px; }
-    .tray-icons { display: flex; gap: 5px; }
-    .tray-icons .icon { width: 16px; height: 16px; stroke-width: 1.9; }
-    .clock { padding: 0 7px; text-align: right; font-size: 11px; line-height: 1.25; }
-
-    .panel { position: absolute; z-index: 900; background: var(--glass); backdrop-filter: blur(36px) saturate(1.4); border: 1px solid rgba(255,255,255,.58); box-shadow: var(--shadow); opacity: 0; visibility: hidden; transform: translateY(18px) scale(.985); transition: .19s cubic-bezier(.2,.8,.2,1); }
-    .panel.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
-    .start-menu { width: min(640px, calc(100vw - 24px)); height: min(710px, calc(100vh - 72px)); left: 50%; bottom: 62px; transform-origin: bottom center; margin-left: -320px; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-    .start-menu:not(.open) { transform: translateY(18px) scale(.985); }
-    .start-search { margin: 30px 32px 20px; height: 40px; border: 1px solid rgba(22,63,108,.16); border-bottom: 2px solid var(--accent); border-radius: 7px; background: rgba(255,255,255,.8); display: flex; align-items: center; gap: 10px; padding: 0 13px; }
-    .start-search input { border: 0; outline: 0; background: transparent; width: 100%; font-size: 14px; color: var(--ink); user-select: text; }
-    .start-content { padding: 0 40px; overflow: auto; flex: 1; }
-    .section-head { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 14px; font-size: 14px; font-weight: 650; }
-    .mini-button { border: 1px solid var(--line); border-radius: 5px; padding: 5px 10px; background: rgba(255,255,255,.64); font-size: 12px; }
-    .pinned-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px 7px; margin-bottom: 26px; }
-    .start-app { min-width: 0; height: 76px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; align-content: center; gap: 7px; font-size: 12px; }
-    .start-app:hover { background: rgba(255,255,255,.52); }
-    .start-app svg { width: 32px; height: 32px; }
-    .recommended { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 16px; }
-    .recent-item { border: 0; background: transparent; border-radius: 6px; padding: 9px; display: grid; grid-template-columns: 36px 1fr; align-items: center; text-align: left; gap: 10px; }
-    .recent-item:hover { background: rgba(255,255,255,.5); }
-    .recent-item svg { width: 30px; height: 30px; }
-    .recent-item strong, .recent-item small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .recent-item strong { font-size: 12px; font-weight: 550; }.recent-item small { color: var(--muted); font-size: 11px; margin-top: 2px; }
-    .start-footer { height: 64px; padding: 0 44px; background: rgba(235,242,251,.6); border-top: 1px solid rgba(30,58,91,.08); display: flex; align-items: center; justify-content: space-between; }
-    .profile { display: flex; align-items: center; gap: 10px; font-size: 12px; }.avatar { width: 32px; height: 32px; border-radius: 50%; background: #d9e7f7; display: grid; place-items: center; overflow: hidden; }.avatar svg { width: 27px; height: 27px; }
-
-    .search-panel { width: min(760px, calc(100vw - 24px)); height: min(630px, calc(100vh - 72px)); left: 50%; bottom: 62px; margin-left: -380px; border-radius: 12px; padding: 26px; }
-    .search-box { height: 44px; border-radius: 8px; background: white; border: 1px solid var(--line); border-bottom: 2px solid var(--accent); display: flex; align-items: center; gap: 12px; padding: 0 14px; }
-    .search-box input { width: 100%; border: 0; outline: 0; user-select: text; }.search-tabs { display: flex; gap: 24px; margin: 20px 6px; font-size: 13px; }.search-tabs span:first-child { font-weight: 650; color: var(--accent); }
-    .search-hero { border-radius: 10px; background: rgba(255,255,255,.54); padding: 22px; display: grid; grid-template-columns: 1fr 220px; gap: 24px; }.search-results { display: grid; gap: 7px; }.search-result { border: 0; border-radius: 7px; background: rgba(255,255,255,.72); padding: 12px; display: flex; align-items: center; gap: 12px; text-align: left; }.search-result:hover { background: white; }.search-result svg { width: 30px; height: 30px; }.search-empty { color: var(--muted); padding: 25px; text-align: center; }
-
-    .quick-settings { right: 12px; bottom: 62px; width: 368px; max-height: calc(100vh - 74px); overflow: auto; border-radius: 12px; padding: 22px; }
-    .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }.quick-tile { border: 0; background: rgba(255,255,255,.65); border-radius: 8px; min-height: 64px; display: grid; place-items: center; gap: 4px; padding: 8px; font-size: 11px; }.quick-tile.active { background: var(--accent); color: white; }.quick-tile .icon { width: 19px; height: 19px; }.slider-row { display: grid; grid-template-columns: 22px 1fr; align-items: center; gap: 12px; margin-top: 20px; }.slider-row input { accent-color: var(--accent); width: 100%; }.quick-footer { margin: 18px -22px -22px; padding: 12px 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
-    .notification-center { right: 12px; bottom: 62px; width: 350px; max-height: calc(100vh - 74px); overflow: auto; border-radius: 12px; padding: 18px; }.calendar-head { display: flex; justify-content: space-between; align-items: center; }.calendar-head strong { font-size: 14px; }.month-title { margin: 25px 0 12px; font-weight: 650; }.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 12px; }.calendar-grid span { aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; }.calendar-grid .dim { color: #8d99a9; }.calendar-grid .today { background: var(--accent); color: white; }.notification { margin-top: 18px; border-radius: 8px; padding: 13px; background: rgba(255,255,255,.66); font-size: 12px; }.notification small { display: block; color: var(--muted); margin-top: 5px; }
-
-    .window { position: absolute; z-index: 20; min-width: 360px; min-height: 260px; background: var(--glass-strong); border: 1px solid rgba(255,255,255,.7); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; display: none; flex-direction: column; animation: windowIn .16s ease-out; }
-    .window.visible { display: flex; }.window.focused { z-index: 100; }.window.maximized { inset: 0 0 var(--taskbar-h) 0 !important; width: auto !important; height: auto !important; border-radius: 0; }.window.minimized { display: none; }
-    @keyframes windowIn { from { opacity: 0; transform: scale(.96) translateY(8px); } }
-    .titlebar { height: 36px; flex: 0 0 36px; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; background: rgba(248,251,255,.76); }.window-title { display: flex; align-items: center; gap: 8px; font-size: 12px; }.window-title svg { width: 18px; height: 18px; }.window-controls { align-self: stretch; display: flex; }.window-control { width: 46px; border: 0; background: transparent; font-size: 15px; }.window-control:hover { background: rgba(27,50,81,.08); }.window-control.close:hover { background: #c42b1c; color: white; }
-    .toolbar { min-height: 48px; flex: 0 0 auto; display: flex; align-items: center; gap: 7px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: rgba(248,251,255,.72); }.tool-button { min-width: 32px; height: 32px; border: 0; border-radius: 5px; background: transparent; display: grid; place-items: center; }.tool-button:hover { background: rgba(23,52,90,.08); }.tool-button .icon { width: 18px; height: 18px; }.address { height: 32px; flex: 1; min-width: 80px; border: 1px solid var(--line); border-radius: 5px; background: rgba(255,255,255,.82); display: flex; align-items: center; gap: 7px; padding: 0 10px; font-size: 12px; }.window-body { flex: 1; min-height: 0; overflow: auto; }
-
-    .explorer-layout { height: 100%; display: grid; grid-template-columns: 190px 1fr; }.sidebar { padding: 10px; border-right: 1px solid var(--line); background: rgba(240,246,253,.63); }.nav-item { width: 100%; border: 0; border-radius: 5px; background: transparent; padding: 7px 9px; display: flex; align-items: center; gap: 10px; font-size: 12px; text-align: left; }.nav-item:hover, .nav-item.active { background: rgba(28,88,148,.09); }.nav-item .icon { width: 18px; height: 18px; }.files-view { padding: 18px; }.files-view h3 { margin: 0 0 18px; font-size: 16px; }.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 9px; }.file-card { border: 1px solid transparent; border-radius: 7px; background: transparent; padding: 12px; display: flex; align-items: center; gap: 10px; text-align: left; }.file-card:hover { background: rgba(255,255,255,.8); border-color: var(--line); }.file-card svg { width: 32px; height: 32px; flex: 0 0 auto; }.file-card strong { font-size: 12px; font-weight: 550; }.file-card small { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; }
-
-    .edge-tabs { height: 38px; padding: 6px 10px 0; display: flex; gap: 4px; background: #e7edf5; }.edge-tab { width: 190px; border-radius: 7px 7px 0 0; padding: 0 10px; background: white; display: flex; align-items: center; gap: 8px; font-size: 12px; }.browser-page { height: 100%; overflow: auto; background: #f5f8fb; }.browser-hero { min-height: 100%; padding: clamp(36px, 7vw, 90px); color: white; background: linear-gradient(135deg, #123e73, #237bb2 52%, #46a99c); display: grid; align-content: center; text-align: center; }.browser-hero h1 { font-size: clamp(36px, 6vw, 76px); margin: 0 0 12px; letter-spacing: -.04em; }.browser-hero p { font-size: 17px; opacity: .88; }.web-search { margin: 24px auto; width: min(620px, 90%); height: 54px; background: white; color: var(--ink); border-radius: 8px; display: flex; align-items: center; gap: 12px; padding: 0 18px; box-shadow: 0 12px 35px rgba(0,0,0,.18); }.web-search input { border: 0; outline: 0; width: 100%; user-select: text; }.web-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: min(720px, 94%); margin: 10px auto; }.web-card { border: 0; border-radius: 9px; background: rgba(255,255,255,.14); color: white; padding: 15px 8px; backdrop-filter: blur(10px); }
-
-    .notepad-menu { height: 34px; display: flex; align-items: center; gap: 18px; padding: 0 12px; border-bottom: 1px solid var(--line); font-size: 12px; }.notepad-area { flex: 1; resize: none; border: 0; outline: 0; padding: 18px; background: rgba(255,255,255,.92); color: #202735; line-height: 1.6; user-select: text; font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace; font-size: 14px; }.statusbar { height: 24px; padding: 0 12px; display: flex; justify-content: flex-end; align-items: center; gap: 20px; border-top: 1px solid var(--line); font-size: 10px; color: var(--muted); }
-    .settings-layout { height: 100%; display: grid; grid-template-columns: 230px 1fr; }.settings-side { padding: 20px 12px; background: rgba(239,245,252,.66); border-right: 1px solid var(--line); }.settings-user { padding: 0 8px 18px; display: flex; gap: 10px; align-items: center; }.settings-nav { display: grid; gap: 3px; }.settings-main { padding: 34px; overflow: auto; }.settings-main h1 { font-size: 28px; margin: 0 0 24px; }.setting-card { background: rgba(255,255,255,.78); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }.setting-card .icon { width: 24px; height: 24px; }.setting-copy { flex: 1; }.setting-copy strong, .setting-copy small { display: block; }.setting-copy small { color: var(--muted); margin-top: 3px; }.toggle { width: 40px; height: 22px; border: 0; border-radius: 20px; background: #8a95a3; padding: 2px; }.toggle::after { content: ""; display: block; width: 18px; height: 18px; border-radius: 50%; background: white; transition: transform .2s; }.toggle.on { background: var(--accent); }.toggle.on::after { transform: translateX(18px); }
-
-    .calculator { width: 330px; min-width: 330px; height: 520px; min-height: 480px; }.calc-display { padding: 18px 20px 10px; text-align: right; }.calc-expression { min-height: 24px; color: var(--muted); font-size: 13px; }.calc-value { font-size: 44px; font-weight: 550; overflow: hidden; text-overflow: ellipsis; }.calc-grid { flex: 1; padding: 8px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }.calc-key { border: 1px solid rgba(30,55,86,.06); border-radius: 5px; background: rgba(255,255,255,.72); font-size: 15px; }.calc-key:hover { background: white; }.calc-key.op { background: rgba(226,234,244,.9); }.calc-key.equals { background: var(--accent); color: white; }
-
-    .context-menu { position: absolute; z-index: 1200; width: 230px; padding: 5px; border-radius: 8px; background: rgba(250,252,255,.92); border: 1px solid rgba(255,255,255,.72); backdrop-filter: blur(24px); box-shadow: var(--shadow); display: none; }.context-menu.open { display: block; }.context-item { width: 100%; height: 34px; border: 0; border-radius: 4px; background: transparent; display: flex; align-items: center; gap: 11px; padding: 0 10px; font-size: 12px; text-align: left; }.context-item:hover { background: rgba(22,67,116,.08); }.context-item .icon { width: 17px; height: 17px; }.separator { height: 1px; margin: 5px; background: var(--line); }
-    .toast { position: absolute; z-index: 1500; right: 18px; bottom: 72px; width: 320px; padding: 15px; border-radius: 9px; background: rgba(248,251,255,.94); backdrop-filter: blur(24px); box-shadow: var(--shadow); transform: translateX(380px); transition: transform .3s ease; }.toast.show { transform: translateX(0); }.toast strong { font-size: 13px; }.toast p { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
-
-    @media (max-width: 720px) {
-      .start-menu, .search-panel { left: 12px; right: 12px; width: auto; margin-left: 0; }.pinned-grid { grid-template-columns: repeat(4,1fr); }.recommended { grid-template-columns: 1fr; }.taskbar { justify-content: flex-start; overflow: hidden; }.taskbar-center { margin-left: 3px; }.task-button:nth-of-type(n+7) { display: none; }.taskbar-right { right: 4px; }.tray-icons { display: none; }.window { min-width: 0; left: 6px !important; top: 6px !important; width: calc(100vw - 12px) !important; height: calc(100vh - 64px) !important; }.explorer-layout, .settings-layout { grid-template-columns: 1fr; }.sidebar, .settings-side { display: none; }.web-cards { grid-template-columns: repeat(2,1fr); }.quick-settings, .notification-center { right: 8px; width: calc(100vw - 16px); }.search-hero { grid-template-columns: 1fr; }.desktop-icons { grid-template-columns: repeat(2,78px); }
+    .project:hover { transform: translateY(-5px); border-color: rgba(118,167,255,.7); background: rgba(25,35,59,.9); }
+    .preview {
+      height: 118px;
+      border-radius: 13px;
+      background:
+        radial-gradient(ellipse at 67% 38%, #71c8f7 0 12%, #3988eb 35%, transparent 56%),
+        linear-gradient(135deg, #173bb0, #3079e6 55%, #6ac4f4);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.13);
     }
-    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+    .project h2 { margin: 22px 0 8px; font-size: 21px; }
+    .project p { margin: 0; color: #9ba8be; line-height: 1.65; }
+    .open { margin-top: auto; padding-top: 22px; color: #85afff; font-weight: 650; }
+    footer { margin-top: 58px; color: #718098; font-size: 13px; }
   </style>
 </head>
 <body>
-  <svg class="svg-sprite" aria-hidden="true">
-    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4.5 4.5"/></symbol>
-    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9a14 14 0 0 1 18 0M6 13a9 9 0 0 1 12 0m-9 4a4 4 0 0 1 6 0"/><circle cx="12" cy="20" r=".7" fill="currentColor"/></symbol>
-    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M5 10v4h4l5 4V6L9 10H5Zm12-1a5 5 0 0 1 0 6m2-9a9 9 0 0 1 0 12"/></symbol>
-    <symbol id="i-battery" viewBox="0 0 24 24"><rect x="3" y="7" width="17" height="10" rx="2"/><path d="M22 10v4M6 10h9v4H6z" fill="currentColor" stroke="none"/></symbol>
-    <symbol id="i-folder" viewBox="0 0 24 24"><path fill="#f3bd35" stroke="#d99a18" d="M2.5 6.5h7l2 2h10v10a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2z"/><path fill="#ffd75c" stroke="#e8ad24" d="M2.5 8.5h19l-2 10h-17z"/></symbol>
-    <symbol id="i-edge" viewBox="0 0 24 24"><path fill="#0aa8db" stroke="none" d="M21 14.2c0 5.1-4.1 8.8-9.6 8.8C5.6 23 2 19.7 2 15.1c0-4.1 3.2-7.6 7.5-7.6 3.7 0 6.5 2.4 6.5 5.6 0 .6-.1 1.1-.2 1.5-1.4-2.3-4.5-3.4-7-2.1-2.5 1.2-3.3 4.2-1.8 6.2 1.4 1.8 4.2 2.2 6.5 1.1-4.6.4-6.2-4.7-2.3-6.1 2.5-.9 5.6.9 9.8.5Z"/><path fill="#1bc48b" stroke="none" d="M3.8 11.2C4.6 5.4 8.5 1 14.1 1 19.4 1 22 4.6 22 8.3c0 2.5-1.2 4.8-3 6.2-.8-3-3.5-5.2-7-5.2-3.3 0-6.4 1.5-8.2 4.2-.2-.8-.2-1.5 0-2.3Z"/></symbol>
-    <symbol id="i-notepad" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" fill="#e8f6ff" stroke="#4fa5dc"/><path d="M8 7h8M8 11h8M8 15h6" stroke="#247bb4"/></symbol>
-    <symbol id="i-settings" viewBox="0 0 24 24"><path fill="#6f7d91" stroke="none" d="m20.2 13.8 2-1.1-2-3.4-2.1.8a7 7 0 0 0-1.5-.9L16.3 7h-4l-.4 2.2c-.5.2-1 .5-1.5.9l-2.1-.8-2 3.4 2 1.1v1.8l-2 1.1 2 3.4 2.1-.8c.5.4 1 .7 1.5.9l.4 2.2h4l.4-2.2c.5-.2 1-.5 1.5-.9l2.1.8 2-3.4-2-1.1v-1.8ZM14.3 18a3.3 3.3 0 1 1 0-6.6 3.3 3.3 0 0 1 0 6.6Z" transform="translate(-2.3 -2.7)"/></symbol>
-    <symbol id="i-store" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="15" rx="2" fill="#167ad5" stroke="none"/><path d="M8 8V6a4 4 0 0 1 8 0v2" stroke="white"/><path d="M8 13h3v3H8zm5 0h3v3h-3z" fill="white" stroke="none"/></symbol>
-    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" fill="#6e7785" stroke="none"/><rect x="7" y="5" width="10" height="4" rx="1" fill="white" stroke="none"/><path d="M8 13h1m3 0h1m3 0h1M8 17h1m3 0h1m3 0h1" stroke="white" stroke-width="2.2"/></symbol>
-    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="#8fb5d8" stroke="none"/><path d="M4 21a8 8 0 0 1 16 0" fill="#5e8cb8" stroke="none"/></symbol>
-    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8m5.7-5.7a9 9 0 1 1-11.4 0"/></symbol>
-    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v9H6v-9"/></symbol>
-    <symbol id="i-pc" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8m-4-5v5"/></symbol>
-    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m5 18 5-5 3 3 2-2 4 4"/></symbol>
-    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l10-2v13M9 18a3 3 0 1 1-3-3h3m10 1a3 3 0 1 1-3-3h3"/></symbol>
-    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 20h16"/></symbol>
-    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5m9.5-4A8 8 0 0 0 5 8.5M5.5 16A8 8 0 0 0 19 15.5"/></symbol>
-    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
-    <symbol id="i-bluetooth" viewBox="0 0 24 24"><path d="m7 7 10 10-5 4V3l5 4L7 17"/></symbol>
-    <symbol id="i-plane" viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8z"/></symbol>
-    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
-    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/></symbol>
-    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
-    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 3h6l1 4H8l1-4Zm-2 4 1 14h8l1-14M10 11v6m4-6v6"/></symbol>
-    <symbol id="i-display" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 22h8m-4-4v4"/></symbol>
-  </svg>
-
-  <main class="desktop" id="desktop" aria-label="Windows 11 网页桌面">
-    <section class="desktop-icons" aria-label="桌面图标">
-      <button class="desktop-icon" data-app="explorer" aria-label="打开此电脑"><svg class="icon"><use href="#i-pc"/></svg><span>此电脑</span></button>
-      <button class="desktop-icon" data-app="edge" aria-label="打开 Microsoft Edge"><svg class="app-logo"><use href="#i-edge"/></svg><span>Microsoft Edge</span></button>
-      <button class="desktop-icon" data-app="notepad" aria-label="打开记事本"><svg class="app-logo"><use href="#i-notepad"/></svg><span>记事本</span></button>
-      <button class="desktop-icon" data-action="recycle" aria-label="回收站"><svg class="icon"><use href="#i-trash"/></svg><span>回收站</span></button>
+  <main>
+    <div class="eyebrow">HTML Experiments</div>
+    <h1>GPT-5.6 Sol 测试</h1>
+    <p class="intro">这是一个静态网页作品集合。每个项目都放在独立文件夹中，并通过文件夹里的 <code>index.html</code> 直接访问。</p>
+    <section class="projects" aria-label="项目列表">
+      <a class="project" href="./windows-11-web/">
+        <div class="preview" aria-hidden="true"></div>
+        <h2>Windows 11 Web Desktop</h2>
+        <p>使用单文件 HTML、CSS、JavaScript 与 SVG 实现的可交互 Windows 11 桌面。</p>
+        <span class="open">进入项目 →</span>
+      </a>
     </section>
-
-    <section class="panel start-menu" id="startMenu" aria-label="开始菜单">
-      <label class="start-search"><svg class="icon"><use href="#i-search"/></svg><input id="startSearch" type="search" placeholder="在此键入以搜索" aria-label="搜索应用"></label>
-      <div class="start-content"><div class="section-head"><span>已固定</span><button class="mini-button">所有应用 ›</button></div><div class="pinned-grid" id="pinnedApps"></div><div class="section-head"><span>推荐的项目</span><button class="mini-button">更多 ›</button></div><div class="recommended"><button class="recent-item" data-app="notepad"><svg class="app-logo"><use href="#i-notepad"/></svg><span><strong>欢迎使用 Windows 11.txt</strong><small>刚刚</small></span></button><button class="recent-item" data-app="explorer"><svg class="app-logo"><use href="#i-folder"/></svg><span><strong>项目资料</strong><small>昨天</small></span></button></div></div>
-      <footer class="start-footer"><div class="profile"><span class="avatar"><svg><use href="#i-user"/></svg></span><span>Web User</span></div><button class="task-button" id="powerButton" aria-label="电源"><svg class="icon"><use href="#i-power"/></svg></button></footer>
-    </section>
-
-    <section class="panel search-panel" id="searchPanel" aria-label="搜索面板"><label class="search-box"><svg class="icon"><use href="#i-search"/></svg><input id="globalSearch" placeholder="搜索应用、设置和文档" aria-label="全局搜索"></label><div class="search-tabs"><span>全部</span><span>应用</span><span>文档</span><span>Web</span></div><div class="search-hero"><div><h2>搜索 Windows</h2><p>快速找到应用、文件和设置。</p></div><div class="search-results" id="searchResults"></div></div></section>
-
-    <section class="panel quick-settings" id="quickSettings" aria-label="快速设置"><div class="quick-grid"><button class="quick-tile active"><svg class="icon"><use href="#i-wifi"/></svg><span>Wi-Fi</span></button><button class="quick-tile active"><svg class="icon"><use href="#i-bluetooth"/></svg><span>蓝牙</span></button><button class="quick-tile"><svg class="icon"><use href="#i-plane"/></svg><span>飞行模式</span></button><button class="quick-tile"><svg class="icon"><use href="#i-moon"/></svg><span>专注助手</span></button><button class="quick-tile active"><svg class="icon"><use href="#i-battery"/></svg><span>节电模式</span></button><button class="quick-tile"><svg class="icon"><use href="#i-display"/></svg><span>投影</span></button></div><label class="slider-row"><svg class="icon"><use href="#i-sun"/></svg><input type="range" min="20" max="100" value="82" aria-label="亮度"></label><label class="slider-row"><svg class="icon"><use href="#i-volume"/></svg><input type="range" min="0" max="100" value="64" aria-label="音量"></label><footer class="quick-footer"><span>68% 可用</span><button class="task-button" data-app="settings" aria-label="打开设置"><svg class="icon"><use href="#i-settings"/></svg></button></footer></section>
-    <section class="panel notification-center" id="notificationCenter" aria-label="通知中心"><div class="calendar-head"><strong id="fullDate"></strong><button class="mini-button">收起</button></div><div class="month-title" id="monthTitle"></div><div class="calendar-grid" id="calendarGrid"></div><article class="notification"><strong>欢迎体验 Windows 11 Web</strong><small>双击桌面图标，或从开始菜单启动应用。</small></article></section>
-
-    <section class="window" id="win-explorer" data-window="explorer" style="left:12%;top:9%;width:72%;height:68%"><div class="titlebar"><div class="window-title"><svg class="app-logo"><use href="#i-folder"/></svg><span>文件资源管理器</span></div><div class="window-controls"><button class="window-control" data-win-action="min" aria-label="最小化">—</button><button class="window-control" data-win-action="max" aria-label="最大化">□</button><button class="window-control close" data-win-action="close" aria-label="关闭">×</button></div></div><div class="toolbar"><button class="tool-button"><span>＋</span></button><button class="tool-button"><svg class="icon"><use href="#i-refresh"/></svg></button><div class="address"><svg class="icon"><use href="#i-home"/></svg><span>主页</span></div><button class="tool-button"><svg class="icon"><use href="#i-search"/></svg></button></div><div class="window-body explorer-layout"><aside class="sidebar"><button class="nav-item active"><svg class="icon"><use href="#i-home"/></svg>主页</button><button class="nav-item"><svg class="icon"><use href="#i-image"/></svg>图库</button><button class="nav-item"><svg class="icon"><use href="#i-download"/></svg>下载</button><button class="nav-item"><svg class="icon"><use href="#i-pc"/></svg>此电脑</button></aside><div class="files-view"><h3>快速访问</h3><div class="folder-grid"><button class="file-card"><svg class="app-logo"><use href="#i-folder"/></svg><span><strong>桌面</strong><small>本地</small></span></button><button class="file-card"><svg class="app-logo"><use href="#i-folder"/></svg><span><strong>文档</strong><small>3 个项目</small></span></button><button class="file-card"><svg class="app-logo"><use href="#i-folder"/></svg><span><strong>下载</strong><small>5 个项目</small></span></button><button class="file-card"><svg class="app-logo"><use href="#i-image"/></svg><span><strong>图片</strong><small>12 个项目</small></span></button><button class="file-card"><svg class="app-logo"><use href="#i-music"/></svg><span><strong>音乐</strong><small>8 个项目</small></span></button><button class="file-card" data-app="notepad"><svg class="app-logo"><use href="#i-notepad"/></svg><span><strong>欢迎使用.txt</strong><small>1 KB</small></span></button></div></div></div></section>
-
-    <section class="window" id="win-edge" data-window="edge" style="left:9%;top:6%;width:78%;height:76%"><div class="edge-tabs"><div class="edge-tab"><svg class="app-logo" style="width:18px;height:18px"><use href="#i-edge"/></svg><span>新建标签页</span></div></div><div class="titlebar"><div class="window-title"></div><div class="window-controls"><button class="window-control" data-win-action="min">—</button><button class="window-control" data-win-action="max">□</button><button class="window-control close" data-win-action="close">×</button></div></div><div class="toolbar"><button class="tool-button">←</button><button class="tool-button">→</button><button class="tool-button"><svg class="icon"><use href="#i-refresh"/></svg></button><div class="address">🔒&nbsp; windows11.local</div></div><div class="window-body browser-page"><div class="browser-hero"><h1>开始浏览</h1><p>这是一个在浏览器中运行的 Windows 11 交互桌面。</p><label class="web-search"><svg class="icon"><use href="#i-search"/></svg><input id="webSearch" placeholder="搜索 Web" aria-label="搜索 Web"></label><div class="web-cards"><button class="web-card">新闻</button><button class="web-card">天气</button><button class="web-card">Microsoft 365</button><button class="web-card">Xbox</button></div></div></div></section>
-
-    <section class="window" id="win-notepad" data-window="notepad" style="left:22%;top:12%;width:58%;height:65%"><div class="titlebar"><div class="window-title"><svg class="app-logo"><use href="#i-notepad"/></svg><span>记事本</span></div><div class="window-controls"><button class="window-control" data-win-action="min">—</button><button class="window-control" data-win-action="max">□</button><button class="window-control close" data-win-action="close">×</button></div></div><div class="notepad-menu"><span>文件</span><span>编辑</span><span>查看</span></div><textarea class="notepad-area" id="notepadArea" spellcheck="false" aria-label="记事本文本编辑区">欢迎使用 Windows 11 Web！
-
-你可以：
-• 拖动窗口标题栏移动窗口
-• 使用最小化、最大化和关闭按钮
-• 打开开始菜单、搜索与快速设置
-• 在这里输入内容，文本会自动保存在浏览器中
-• 右键桌面打开上下文菜单</textarea><div class="statusbar"><span id="lineCount">第 1 行，第 1 列</span><span>100%</span><span>Windows (CRLF)</span><span>UTF-8</span></div></section>
-
-    <section class="window" id="win-settings" data-window="settings" style="left:14%;top:8%;width:72%;height:74%"><div class="titlebar"><div class="window-title"><svg class="app-logo"><use href="#i-settings"/></svg><span>设置</span></div><div class="window-controls"><button class="window-control" data-win-action="min">—</button><button class="window-control" data-win-action="max">□</button><button class="window-control close" data-win-action="close">×</button></div></div><div class="window-body settings-layout"><aside class="settings-side"><div class="settings-user"><span class="avatar"><svg><use href="#i-user"/></svg></span><span><strong>Web User</strong><small>本地账户</small></span></div><nav class="settings-nav"><button class="nav-item active"><svg class="icon"><use href="#i-display"/></svg>系统</button><button class="nav-item"><svg class="icon"><use href="#i-bluetooth"/></svg>蓝牙和设备</button><button class="nav-item"><svg class="icon"><use href="#i-wifi"/></svg>网络和 Internet</button><button class="nav-item"><svg class="icon"><use href="#i-image"/></svg>个性化</button></nav></aside><div class="settings-main"><h1>系统</h1><article class="setting-card"><svg class="icon"><use href="#i-display"/></svg><div class="setting-copy"><strong>显示</strong><small>监视器、亮度、夜间模式</small></div><button class="toggle on" aria-label="切换显示设置"></button></article><article class="setting-card"><svg class="icon"><use href="#i-volume"/></svg><div class="setting-copy"><strong>声音</strong><small>音量级别、输出、输入</small></div><button class="toggle on" aria-label="切换声音"></button></article><article class="setting-card"><svg class="icon"><use href="#i-moon"/></svg><div class="setting-copy"><strong>夜间模式</strong><small>使用暖色帮助阻挡蓝光</small></div><button class="toggle" id="nightToggle" aria-label="切换夜间模式"></button></article><article class="setting-card"><svg class="icon"><use href="#i-power"/></svg><div class="setting-copy"><strong>电源和电池</strong><small>睡眠、使用情况、节电模式</small></div><span>68%</span></article></div></div></section>
-
-    <section class="window calculator" id="win-calculator" data-window="calculator" style="left:36%;top:12%"><div class="titlebar"><div class="window-title"><svg class="app-logo"><use href="#i-calc"/></svg><span>计算器</span></div><div class="window-controls"><button class="window-control" data-win-action="min">—</button><button class="window-control close" data-win-action="close">×</button></div></div><div class="calc-display"><div class="calc-expression" id="calcExpression"></div><div class="calc-value" id="calcValue">0</div></div><div class="calc-grid" id="calcGrid"></div></section>
-
-    <nav class="context-menu" id="contextMenu" aria-label="桌面上下文菜单"><button class="context-item" data-action="refresh"><svg class="icon"><use href="#i-refresh"/></svg>刷新</button><button class="context-item"><svg class="icon"><use href="#i-display"/></svg>查看</button><button class="context-item"><svg class="icon"><use href="#i-copy"/></svg>新建</button><div class="separator"></div><button class="context-item" data-app="settings"><svg class="icon"><use href="#i-settings"/></svg>个性化</button></nav>
-    <div class="toast" id="toast"><strong id="toastTitle">Windows 11 Web</strong><p id="toastMessage"></p></div>
-
-    <footer class="taskbar" aria-label="任务栏"><div class="taskbar-center"><button class="task-button" id="startButton" aria-label="开始"><svg viewBox="0 0 24 24" width="25" height="25"><path fill="#1676d2" d="M2 3.2 11 2v9H2zm10.2-1.4L22 0v11h-9.8zM2 12.2h9V21l-9-1.2zm10.2 0H22v11l-9.8-1.8z"/></svg></button><button class="task-button" id="searchButton" aria-label="搜索"><svg class="icon"><use href="#i-search"/></svg></button><button class="task-button" data-app="explorer" aria-label="文件资源管理器"><svg class="app-logo"><use href="#i-folder"/></svg></button><button class="task-button" data-app="edge" aria-label="Microsoft Edge"><svg class="app-logo"><use href="#i-edge"/></svg></button><button class="task-button" data-app="notepad" aria-label="记事本"><svg class="app-logo"><use href="#i-notepad"/></svg></button><button class="task-button" data-app="store" aria-label="Microsoft Store"><svg class="app-logo"><use href="#i-store"/></svg></button></div><div class="taskbar-right"><button class="tray-button" id="quickButton" aria-label="快速设置"><span class="tray-icons"><svg class="icon"><use href="#i-wifi"/></svg><svg class="icon"><use href="#i-volume"/></svg><svg class="icon"><use href="#i-battery"/></svg></span></button><button class="tray-button" id="clockButton" aria-label="日期和时间"><span class="clock"><span id="taskTime">00:00</span><br><span id="taskDate">2026/7/9</span></span></button></div></footer>
+    <footer>后续新增项目时，只需创建新的子文件夹并在这里添加入口。</footer>
   </main>
-
-  <script>
-    (() => {
-      'use strict';
-      const $ = (selector, root = document) => root.querySelector(selector);
-      const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-      const desktop = $('#desktop');
-      const panels = $$('.panel');
-      const windows = $$('.window');
-      const appData = [
-        { id: 'edge', name: 'Edge', icon: 'i-edge' }, { id: 'explorer', name: '资源管理器', icon: 'i-folder' },
-        { id: 'settings', name: '设置', icon: 'i-settings' }, { id: 'notepad', name: '记事本', icon: 'i-notepad' },
-        { id: 'calculator', name: '计算器', icon: 'i-calc' }, { id: 'store', name: 'Microsoft Store', icon: 'i-store' },
-        { id: 'photos', name: '照片', icon: 'i-image' }, { id: 'music', name: '媒体播放器', icon: 'i-music' },
-        { id: 'pc', name: '此电脑', icon: 'i-pc', target: 'explorer' }, { id: 'download', name: '下载', icon: 'i-download', target: 'explorer' },
-        { id: 'paint', name: '画图', icon: 'i-image' }, { id: 'clock', name: '时钟', icon: 'i-sun' }
-      ];
-      let topZ = 100;
-      let calculatorInput = '0';
-      let calculatorStored = null;
-      let calculatorOperator = null;
-      let resetCalculatorInput = false;
-
-      const iconMarkup = (id, className = 'app-logo') => `<svg class="${className}"><use href="#${id}"/></svg>`;
-      $('#pinnedApps').innerHTML = appData.map(app => `<button class="start-app" data-app="${app.target || app.id}">${iconMarkup(app.icon)}<span>${app.name}</span></button>`).join('');
-
-      function closePanels(except = null) { panels.forEach(panel => { if (panel !== except) panel.classList.remove('open'); }); $('#contextMenu').classList.remove('open'); }
-      function togglePanel(panel) { const willOpen = !panel.classList.contains('open'); closePanels(panel); panel.classList.toggle('open', willOpen); }
-      function focusWindow(win) { windows.forEach(item => item.classList.remove('focused')); win.classList.add('focused'); win.style.zIndex = String(++topZ); updateTaskbar(); }
-      function focusTopWindow() { const candidates = windows.filter(win => win.classList.contains('visible') && !win.classList.contains('minimized')); const next = candidates.sort((left, right) => Number(right.style.zIndex || 0) - Number(left.style.zIndex || 0))[0]; if (next) focusWindow(next); }
-      function updateTaskbar() { $$('[data-app].task-button').forEach(button => { const win = $(`#win-${button.dataset.app}`); button.classList.toggle('running', Boolean(win?.classList.contains('visible'))); button.classList.toggle('active', Boolean(win?.classList.contains('focused') && !win.classList.contains('minimized'))); }); }
-      function toast(message, title = 'Windows 11 Web') { $('#toastTitle').textContent = title; $('#toastMessage').textContent = message; $('#toast').classList.add('show'); clearTimeout(toast.timer); toast.timer = setTimeout(() => $('#toast').classList.remove('show'), 2800); }
-      function openApp(app) {
-        closePanels();
-        const win = $(`#win-${app}`);
-        if (!win) { toast(`${appData.find(item => item.id === app)?.name || app} 是演示应用，当前未安装完整版本。`); return; }
-        win.classList.add('visible'); win.classList.remove('minimized'); focusWindow(win);
-      }
-      function closeWindow(win) { win.classList.remove('visible', 'focused', 'minimized', 'maximized'); focusTopWindow(); updateTaskbar(); }
-      function minimizeWindow(win) { win.classList.add('minimized'); win.classList.remove('focused'); focusTopWindow(); updateTaskbar(); }
-      function maximizeWindow(win) { win.classList.toggle('maximized'); focusWindow(win); }
-
-      desktop.addEventListener('click', event => {
-        const appButton = event.target.closest('[data-app]');
-        if (appButton && !appButton.classList.contains('desktop-icon')) {
-          const win = $(`#win-${appButton.dataset.app}`);
-          if (appButton.classList.contains('task-button') && win?.classList.contains('focused') && !win.classList.contains('minimized')) minimizeWindow(win);
-          else openApp(appButton.dataset.app);
-          return;
-        }
-        if (!event.target.closest('.panel, .taskbar, .window, .context-menu')) closePanels();
-      });
-      $$('.desktop-icon').forEach(icon => { icon.addEventListener('click', () => { $$('.desktop-icon').forEach(item => item.classList.remove('selected')); icon.classList.add('selected'); }); icon.addEventListener('dblclick', () => icon.dataset.app ? openApp(icon.dataset.app) : toast('回收站是空的。')); });
-      $('#startButton').addEventListener('click', event => { event.stopPropagation(); togglePanel($('#startMenu')); });
-      $('#searchButton').addEventListener('click', event => { event.stopPropagation(); togglePanel($('#searchPanel')); if ($('#searchPanel').classList.contains('open')) setTimeout(() => $('#globalSearch').focus(), 80); });
-      $('#quickButton').addEventListener('click', event => { event.stopPropagation(); togglePanel($('#quickSettings')); });
-      $('#clockButton').addEventListener('click', event => { event.stopPropagation(); togglePanel($('#notificationCenter')); });
-      $('#powerButton').addEventListener('click', () => toast('电源菜单：睡眠 · 关机 · 重启'));
-      $$('.quick-tile').forEach(tile => tile.addEventListener('click', () => tile.classList.toggle('active')));
-      $$('.toggle').forEach(toggle => toggle.addEventListener('click', () => toggle.classList.toggle('on')));
-      $('#nightToggle').addEventListener('click', () => desktop.style.filter = $('#nightToggle').classList.contains('on') ? 'sepia(.18) brightness(.78)' : 'none');
-
-      windows.forEach(win => {
-        win.addEventListener('pointerdown', () => focusWindow(win));
-        $$('.window-control', win).forEach(control => control.addEventListener('click', event => { event.stopPropagation(); const action = control.dataset.winAction; if (action === 'close') closeWindow(win); if (action === 'min') minimizeWindow(win); if (action === 'max') maximizeWindow(win); }));
-        const titlebar = $('.titlebar', win);
-        if (!titlebar) return;
-        titlebar.addEventListener('dblclick', event => { if (!event.target.closest('.window-controls')) maximizeWindow(win); });
-        titlebar.addEventListener('pointerdown', event => {
-          if (event.target.closest('.window-controls') || win.classList.contains('maximized') || event.button !== 0) return;
-          focusWindow(win);
-          const rect = win.getBoundingClientRect(); const startX = event.clientX; const startY = event.clientY;
-          titlebar.setPointerCapture(event.pointerId);
-          const move = moveEvent => { const left = Math.max(0, Math.min(innerWidth - rect.width, rect.left + moveEvent.clientX - startX)); const top = Math.max(0, Math.min(innerHeight - 88, rect.top + moveEvent.clientY - startY)); win.style.left = `${left}px`; win.style.top = `${top}px`; };
-          const up = () => { titlebar.removeEventListener('pointermove', move); titlebar.removeEventListener('pointerup', up); };
-          titlebar.addEventListener('pointermove', move); titlebar.addEventListener('pointerup', up);
-        });
-      });
-
-      desktop.addEventListener('contextmenu', event => { if (event.target.closest('.window, .taskbar, .panel')) return; event.preventDefault(); closePanels(); const menu = $('#contextMenu'); menu.style.left = `${Math.max(0, Math.min(event.clientX, innerWidth - 240))}px`; menu.style.top = `${Math.max(0, Math.min(event.clientY, innerHeight - 260))}px`; menu.classList.add('open'); });
-      $('[data-action="refresh"]').addEventListener('click', () => { $('#contextMenu').classList.remove('open'); desktop.animate([{ opacity: .78 }, { opacity: 1 }], { duration: 220 }); });
-
-      function renderSearch(query = '') { const normalized = query.trim().toLowerCase(); const matches = appData.filter(app => !normalized || app.name.toLowerCase().includes(normalized) || app.id.includes(normalized)).slice(0, 6); $('#searchResults').innerHTML = matches.length ? matches.map(app => `<button class="search-result" data-app="${app.target || app.id}">${iconMarkup(app.icon)}<span><strong>${app.name}</strong><small>应用</small></span></button>`).join('') : '<div class="search-empty">未找到匹配结果</div>'; }
-      $('#globalSearch').addEventListener('input', event => renderSearch(event.target.value));
-      $('#startSearch').addEventListener('input', event => { const query = event.target.value.toLowerCase(); $$('.start-app').forEach(button => button.classList.toggle('hidden', !button.textContent.toLowerCase().includes(query))); });
-      renderSearch();
-
-      const notepad = $('#notepadArea');
-      try { const savedNote = localStorage.getItem('windows11-web-note'); if (savedNote !== null) notepad.value = savedNote; } catch { toast('浏览器已禁用本地存储，记事本内容不会持久保存。', '记事本'); }
-      function updateCursor() { const before = notepad.value.slice(0, notepad.selectionStart).split('\n'); const currentLine = before[before.length - 1]; $('#lineCount').textContent = `第 ${before.length} 行，第 ${currentLine.length + 1} 列`; }
-      notepad.addEventListener('input', () => { try { localStorage.setItem('windows11-web-note', notepad.value); } catch { /* 保持编辑功能可用 */ } updateCursor(); }); notepad.addEventListener('keyup', updateCursor); notepad.addEventListener('click', updateCursor);
-
-      const calcKeys = ['%', 'CE', 'C', '⌫', '1/x', 'x²', '√', '÷', '7', '8', '9', '×', '4', '5', '6', '−', '1', '2', '3', '+', '+/−', '0', '.', '='];
-      $('#calcGrid').innerHTML = calcKeys.map(key => `<button class="calc-key ${['÷','×','−','+'].includes(key) ? 'op' : ''} ${key === '=' ? 'equals' : ''}" data-key="${key}">${key}</button>`).join('');
-      function calcRender() { $('#calcValue').textContent = calculatorInput; $('#calcExpression').textContent = calculatorStored !== null && calculatorOperator ? `${calculatorStored} ${calculatorOperator}` : ''; }
-      function normalizeCalculatorValue(value) { return Number.isFinite(value) ? String(Number(value.toPrecision(12))) : '错误'; }
-      function calculate() { if (calculatorStored === null || !calculatorOperator) return; const left = calculatorStored; const right = Number(calculatorInput); const ops = { '+': (a,b) => a+b, '−': (a,b) => a-b, '×': (a,b) => a*b, '÷': (a,b) => b === 0 ? NaN : a/b }; calculatorInput = normalizeCalculatorValue(ops[calculatorOperator](left, right)); calculatorStored = null; calculatorOperator = null; resetCalculatorInput = true; }
-      $('#calcGrid').addEventListener('click', event => { const key = event.target.dataset.key; if (!key) return; if (/^\d$/.test(key)) { calculatorInput = resetCalculatorInput || calculatorInput === '0' || calculatorInput === '错误' ? key : calculatorInput + key; resetCalculatorInput = false; } else if (key === '.') { if (resetCalculatorInput || calculatorInput === '错误') calculatorInput = '0.'; else if (!calculatorInput.includes('.')) calculatorInput += '.'; resetCalculatorInput = false; } else if (['+','−','×','÷'].includes(key)) { if (calculatorStored !== null) calculate(); if (calculatorInput !== '错误') { calculatorStored = Number(calculatorInput); calculatorOperator = key; resetCalculatorInput = true; } } else if (key === '=') calculate(); else if (key === 'C') { calculatorInput = '0'; calculatorStored = null; calculatorOperator = null; } else if (key === 'CE') calculatorInput = '0'; else if (key === '⌫') calculatorInput = calculatorInput.length > 1 && calculatorInput !== '错误' ? calculatorInput.slice(0,-1) : '0'; else if (key === '+/−') calculatorInput = normalizeCalculatorValue(-Number(calculatorInput)); else if (key === 'x²') calculatorInput = normalizeCalculatorValue(Number(calculatorInput) ** 2); else if (key === '√') calculatorInput = normalizeCalculatorValue(Math.sqrt(Number(calculatorInput))); else if (key === '1/x') calculatorInput = normalizeCalculatorValue(1 / Number(calculatorInput)); else if (key === '%') calculatorInput = normalizeCalculatorValue(Number(calculatorInput) / 100); calcRender(); });
-
-      $('#webSearch').addEventListener('keydown', event => { if (event.key === 'Enter' && event.target.value.trim()) { toast(`已模拟搜索：“${event.target.value.trim()}”`, 'Microsoft Edge'); event.target.select(); } });
-      function updateClock() { const now = new Date(); $('#taskTime').textContent = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }); $('#taskDate').textContent = now.toLocaleDateString('zh-CN'); $('#fullDate').textContent = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }); $('#monthTitle').textContent = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' }); }
-      function renderCalendar() { const now = new Date(); const year = now.getFullYear(); const month = now.getMonth(); const first = new Date(year, month, 1); const start = new Date(year, month, 1 - ((first.getDay() + 6) % 7)); const weekdays = ['一','二','三','四','五','六','日']; let html = weekdays.map(day => `<span>${day}</span>`).join(''); for (let index = 0; index < 42; index++) { const date = new Date(start); date.setDate(start.getDate() + index); const isToday = date.toDateString() === now.toDateString(); html += `<span class="${date.getMonth() !== month ? 'dim ' : ''}${isToday ? 'today' : ''}">${date.getDate()}</span>`; } $('#calendarGrid').innerHTML = html; }
-      document.addEventListener('keydown', event => { if (event.key === 'Escape') closePanels(); if (event.key === 'Meta') { event.preventDefault(); togglePanel($('#startMenu')); } });
-      updateClock(); renderCalendar(); setInterval(updateClock, 1000); calcRender();
-      setTimeout(() => toast('系统已准备就绪。双击桌面图标开始体验。'), 900);
-    })();
-  </script>
 </body>
 </html>
